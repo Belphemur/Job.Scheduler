@@ -77,6 +77,11 @@ namespace Job.Scheduler.Job
 
         private async Task StartOneTimeJobAsync(IJob job, CancellationToken token)
         {
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
             await ExecuteJob(job, token);
             IsDone = true;
         }
@@ -92,11 +97,6 @@ namespace Job.Scheduler.Job
         {
             try
             {
-                if (token.IsCancellationRequested)
-                {
-                    return false;
-                }
-
                 await job.ExecuteAsync(token);
             }
             catch (System.Exception e)
