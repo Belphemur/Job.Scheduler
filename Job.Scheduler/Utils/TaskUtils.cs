@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Job.Scheduler.Utils
 {
-    public static class TaskExtensions
+    public static class TaskUtils
     {
         /// <summary>
         /// Return a <see cref="Task"/> that will complete (not throw) when the <paramref name="token"/> is canceled
