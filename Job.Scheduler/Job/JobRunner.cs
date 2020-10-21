@@ -11,11 +11,29 @@ namespace Job.Scheduler.Job
         private readonly IJob _job;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
+        private volatile bool _isDone;
+        public event EventHandler JobDone;
+
+        /// <summary>
+        /// Unique ID of the job runner
+        /// </summary>
+        public Guid UniqueId { get; } = Guid.NewGuid();
 
         /// <summary>
         /// Has the job finished running
         /// </summary>
-        public bool IsDone { get; private set; }
+        public bool IsDone
+        {
+            get => _isDone;
+            private set
+            {
+                _isDone = value;
+                if (_isDone)
+                {
+                    JobDone?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
 
         /// <summary>
         /// Is the job still running
