@@ -7,7 +7,7 @@ namespace Job.Scheduler.Bootstrap
     {
         public override void Load()
         {
-            Bind<IJobScheduler>().To<JobScheduler>();
+            Bind<IJobScheduler>().To<JobScheduler>().InSingletonScope();
         }
     }
 }
