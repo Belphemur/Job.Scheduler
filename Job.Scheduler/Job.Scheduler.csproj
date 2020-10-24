@@ -9,11 +9,7 @@
         <Version>1.0.0</Version>
         <Authors>Antoine Aflalo</Authors>
         <Description>A simple job scheduling library relying on the async/await pattern in C#. Supports Recurring Jobs, Delayed Jobs and One Time Jobs.</Description>
-        <PackageLicenseExpression>BSD License 2.0</PackageLicenseExpression>
-        <PackageLicenseUrl>https://opensource.org/licenses/BSD-3-Clause</PackageLicenseUrl>
+        <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     </PropertyGroup>
-    <PropertyGroup>
-        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    </PropertyGroup>    
 
 </Project>
