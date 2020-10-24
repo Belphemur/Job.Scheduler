@@ -10,6 +10,8 @@
         <Authors>Antoine Aflalo</Authors>
         <Description>A simple job scheduling library relying on the async/await pattern in C#. Supports Recurring Jobs, Delayed Jobs and One Time Jobs.</Description>
         <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/Belphemur/Spotitoast/tree/master/Job.Scheduler</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Belphemur/Spotitoast</RepositoryUrl>
     </PropertyGroup>
 
 </Project>
