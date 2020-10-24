@@ -7,11 +7,11 @@ namespace Job.Scheduler.Job
 {
     internal class JobRunner
     {
-        private readonly IJob _job;
-        private CancellationTokenSource _cancellationTokenSource;
-        private Task _runningTask;
-        private volatile bool _isDone;
-        public event EventHandler JobDone;
+        private readonly IJob                    _job;
+        private          CancellationTokenSource _cancellationTokenSource;
+        private          Task                    _runningTask;
+        private volatile bool                    _isDone;
+        public event EventHandler                JobDone;
 
         /// <summary>
         /// Unique ID of the job runner
@@ -61,7 +61,8 @@ namespace Job.Scheduler.Job
             if (_job is IRecurringJob recurringJob)
             {
                 _runningTask = StartRecurringJobAsync(recurringJob, _cancellationTokenSource.Token);
-            } else if (_job is IDelayedJob delayedJob)
+            }
+            else if (_job is IDelayedJob delayedJob)
             {
                 _runningTask = StartDelayedJobAsync(delayedJob, _cancellationTokenSource.Token);
             }
@@ -71,16 +72,18 @@ namespace Job.Scheduler.Job
             }
         }
 
-        private async Task StartDelayedJobAsync(IDelayedJob delayedJob, CancellationToken token)
+        private Task StartDelayedJobAsync(IDelayedJob delayedJob, CancellationToken token)
         {
-            await Task.Delay(delayedJob.Delay, token);
-            if (token.IsCancellationRequested)
+            return RunAsyncWithDone(async cancellationToken =>
             {
-                return;
-            }
+                await Task.Delay(delayedJob.Delay, cancellationToken);
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
 
-            await delayedJob.ExecuteAsync(token);
-            _isDone = true;
+                await ExecuteJob(delayedJob, cancellationToken);
+            }, token);
         }
 
 
@@ -96,27 +99,40 @@ namespace Job.Scheduler.Job
         }
 
 
-        private async Task StartRecurringJobAsync(IRecurringJob job, CancellationToken token)
+        private Task StartRecurringJobAsync(IRecurringJob job, CancellationToken token)
         {
-            while (!token.IsCancellationRequested)
+            return RunAsyncWithDone(async cancellationToken =>
             {
-                if (!await ExecuteJob(job, token)) break;
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    if (!await ExecuteJob(job, cancellationToken)) break;
 
-                await Task.Delay(job.Delay, token);
-            }
-
-            IsDone = true;
+                    await Task.Delay(job.Delay, cancellationToken);
+                }
+            }, token);
         }
 
-        private async Task StartOneTimeJobAsync(IJob job, CancellationToken token)
+        private Task StartOneTimeJobAsync(IJob job, CancellationToken token)
         {
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
+            return RunAsyncWithDone(cancellationToken => ExecuteJob(job, cancellationToken), token);
+        }
 
-            await ExecuteJob(job, token);
-            IsDone = true;
+        /// <summary>
+        /// Set the runner as done after running the given code
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        private Task RunAsyncWithDone(Func<CancellationToken, Task> task, CancellationToken token)
+        {
+            try
+            {
+                return token.IsCancellationRequested ? Task.CompletedTask : task(token);
+            }
+            finally
+            {
+                _isDone = true;
+            }
         }
 
         /// <summary>
