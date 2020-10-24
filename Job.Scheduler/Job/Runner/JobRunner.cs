@@ -63,7 +63,7 @@ namespace Job.Scheduler.Job.Runner
 
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
-            _runningTask = RunAsyncWithDone(cancellationToken => StartJobAsync(_job, cancellationToken), token);
+            _runningTask = RunAsyncWithDone(cancellationToken => StartJobAsync(_job, cancellationToken), _cancellationTokenSource.Token);
         }
 
 
