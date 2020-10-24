@@ -15,8 +15,10 @@ namespace Job.Scheduler.Scheduler
 
         /// <summary>
         /// Stop asynchronously any running job
+        /// Use the token to stop the job earlier if needed
         /// </summary>
+        /// <param name="token"></param>
         /// <returns></returns>
-        Task StopAsync();
+        Task StopAsync(CancellationToken token = default);
     }
 }

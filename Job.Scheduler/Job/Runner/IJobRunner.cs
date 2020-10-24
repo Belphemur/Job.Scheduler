@@ -24,6 +24,6 @@ namespace Job.Scheduler.Job.Runner
         /// Stop the task and wait for it to terminate
         /// </summary>
         /// <returns></returns>
-        Task StopAsync();
+        public Task StopAsync(CancellationToken token);
     }
 }

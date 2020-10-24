@@ -34,12 +34,12 @@ namespace Job.Scheduler.Scheduler
         }
 
         /// <summary>
-        /// Stop asynchronously any running job
+        /// Stop the task and wait for it to terminate.
+        /// Use the token to stop the task earlier
         /// </summary>
-        /// <returns></returns>
-        public Task StopAsync()
+        public Task StopAsync(CancellationToken token = default)
         {
-            return Task.WhenAll(_jobs.Values.Select(runner => runner.StopAsync()));
+            return Task.WhenAll(_jobs.Values.Select(runner => runner.StopAsync(token)));
         }
     }
 }

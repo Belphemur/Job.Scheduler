@@ -66,14 +66,11 @@ namespace Job.Scheduler.Job.Runner
             _runningTask = RunAsyncWithDone(cancellationToken => StartJobAsync(_job, cancellationToken), token);
         }
 
-        /// <summary>
-        /// Stop the task and wait for it to terminate
-        /// </summary>
-        /// <returns></returns>
-        public async Task StopAsync()
+
+        public async Task StopAsync(CancellationToken token)
         {
             _cancellationTokenSource.Cancel();
-            await _runningTask;
+            await Task.WhenAny(Task.Delay(-1, token), _runningTask);
             _cancellationTokenSource.Dispose();
         }
 
