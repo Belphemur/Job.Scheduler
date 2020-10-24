@@ -9,17 +9,14 @@ namespace Job.Scheduler.Job.Runner
         {
         }
 
-        protected override Task StartJobAsync(IRecurringJob job, CancellationToken token)
+        protected override async Task StartJobAsync(IRecurringJob job, CancellationToken token)
         {
-            return RunAsyncWithDone(async cancellationToken =>
+            while (!token.IsCancellationRequested)
             {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    if (!await ExecuteJob(job, cancellationToken)) break;
+                if (!await ExecuteJob(job, token)) break;
 
-                    await Task.Delay(job.Delay, cancellationToken);
-                }
-            }, token);
+                await Task.Delay(job.Delay, token);
+            }
         }
     }
 }

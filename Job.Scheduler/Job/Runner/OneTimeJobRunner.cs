@@ -11,7 +11,7 @@ namespace Job.Scheduler.Job.Runner
 
         protected override Task StartJobAsync(IJob job, CancellationToken token)
         {
-            return RunAsyncWithDone(cancellationToken => ExecuteJob(job, cancellationToken), token);
+            return ExecuteJob(job, token);
         }
     }
 }

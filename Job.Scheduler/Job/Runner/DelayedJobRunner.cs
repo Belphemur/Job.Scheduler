@@ -9,18 +9,15 @@ namespace Job.Scheduler.Job.Runner
         {
         }
 
-        protected override Task StartJobAsync(IDelayedJob job, CancellationToken token)
+        protected override async Task StartJobAsync(IDelayedJob job, CancellationToken token)
         {
-            return RunAsyncWithDone(async cancellationToken =>
+            await Task.Delay(job.Delay, token);
+            if (token.IsCancellationRequested)
             {
-                await Task.Delay(job.Delay, cancellationToken);
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
+                return;
+            }
 
-                await ExecuteJob(job, cancellationToken);
-            }, token);
+            await ExecuteJob(job, token);
         }
     }
 }
