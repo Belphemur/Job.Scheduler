@@ -12,7 +12,7 @@ namespace Job.Scheduler.Bootstrap
 
         public JobRunnerBuilder()
         {
-            var jobRunnerType = typeof(IJobRunner);
+            var jobRunnerType = typeof(JobRunner<>);
             _jobTypeToRunnerTypeDictionary = AppDomain.CurrentDomain.GetAssemblies()
                                                       .SelectMany(s => s.GetTypes())
                                                       .Where(t => t.IsGenericType)
