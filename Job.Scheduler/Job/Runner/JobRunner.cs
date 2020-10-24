@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Job.Scheduler.Job.Exception;
+using Job.Scheduler.Utils;
 
 namespace Job.Scheduler.Job.Runner
 {
@@ -63,28 +64,25 @@ namespace Job.Scheduler.Job.Runner
 
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
-            _runningTask = RunAsyncWithDone(cancellationToken => StartJobAsync(_job, cancellationToken), _cancellationTokenSource.Token);
+            _runningTask = RunAsyncWithDone(() => StartJobAsync(_job, _cancellationTokenSource.Token));
         }
 
 
         public async Task StopAsync(CancellationToken token)
         {
             _cancellationTokenSource.Cancel();
-            await Task.WhenAny(Task.Delay(-1, token), _runningTask);
+            await Task.WhenAny(TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(-1), token), _runningTask);
             _cancellationTokenSource.Dispose();
         }
 
         /// <summary>
         /// Set the runner as done after running the given <see cref="task"/>
         /// </summary>
-        /// <param name="task"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        private Task RunAsyncWithDone(Func<CancellationToken, Task> task, CancellationToken token)
+        private async Task RunAsyncWithDone(Func<Task> task)
         {
             try
             {
-                return token.IsCancellationRequested ? Task.CompletedTask : task(token);
+                await task();
             }
             finally
             {
