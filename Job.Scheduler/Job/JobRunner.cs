@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Job.Scheduler.Job.Exception;
-using Job.Scheduler.Utils;
 
 namespace Job.Scheduler.Job
 {
@@ -87,7 +86,7 @@ namespace Job.Scheduler.Job
             {
                 if (!await ExecuteJob(job, token)) break;
 
-                await TaskUtils.WaitForTokenShutdownAsync(token).WaitAsync(job.Delay);
+                await Task.Delay(job.Delay, token);
             }
 
             IsDone = true;
