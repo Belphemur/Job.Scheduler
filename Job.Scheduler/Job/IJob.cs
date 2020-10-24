@@ -22,6 +22,9 @@ namespace Job.Scheduler.Job
         Task<bool> OnFailure(JobException exception);
     }
 
+    /// <summary>
+    /// Job that is run recurringly with a delay between execution
+    /// </summary>
     public interface IRecurringJob : IJob
     {
         /// <summary>
@@ -30,6 +33,9 @@ namespace Job.Scheduler.Job
         public TimeSpan Delay { get; }
     }
 
+    /// <summary>
+    /// Job that is run once after the delay has expired
+    /// </summary>
     public interface IDelayedJob : IJob
     {
         /// <summary>
