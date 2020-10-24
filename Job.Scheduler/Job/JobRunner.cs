@@ -58,15 +58,31 @@ namespace Job.Scheduler.Job
             }
 
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-            if (_job is IRecurringJob job)
+            if (_job is IRecurringJob recurringJob)
             {
-                _runningTask = StartRecurringJobAsync(job, _cancellationTokenSource.Token);
+                _runningTask = StartRecurringJobAsync(recurringJob, _cancellationTokenSource.Token);
+            } else if (_job is IDelayedJob delayedJob)
+            {
+                _runningTask = StartDelayedJobAsync(delayedJob, _cancellationTokenSource.Token);
             }
             else
             {
                 _runningTask = StartOneTimeJobAsync(_job, _cancellationTokenSource.Token);
             }
         }
+
+        private async Task StartDelayedJobAsync(IDelayedJob delayedJob, CancellationToken token)
+        {
+            await Task.Delay(delayedJob.Delay, token);
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            await delayedJob.ExecuteAsync(token);
+            _isDone = true;
+        }
+
 
         /// <summary>
         /// Stop the task and wait for it to terminate

@@ -29,4 +29,12 @@ namespace Job.Scheduler.Job
         /// </summary>
         public TimeSpan Delay { get; }
     }
+
+    public interface IDelayedJob : IJob
+    {
+        /// <summary>
+        /// Delay before executing the job
+        /// </summary>
+        public TimeSpan Delay { get; }
+    }
 }
