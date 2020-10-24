@@ -6,28 +6,34 @@ using Job.Scheduler.Job.Runner;
 
 namespace Job.Scheduler.Bootstrap
 {
-    internal class JobRunnerBuilder
+    public class JobRunnerBuilder
     {
         private readonly Dictionary<Type, Type> _jobTypeToRunnerTypeDictionary;
+        private readonly Dictionary<Type, Type> _jobToRunner = new Dictionary<Type, Type>();
 
         public JobRunnerBuilder()
         {
-            var jobRunnerType = typeof(JobRunner<>);
-            _jobTypeToRunnerTypeDictionary = AppDomain.CurrentDomain.GetAssemblies()
-                                                      .SelectMany(s => s.GetTypes())
-                                                      .Where(t => t.IsGenericType)
-                                                      .Where(p => jobRunnerType.IsAssignableFrom(p))
-                                                      .ToDictionary(type => type.GetGenericArguments().First());
+            var jobRunnerType = typeof(IJobRunner);
+            _jobTypeToRunnerTypeDictionary = jobRunnerType.Assembly.GetTypes()
+                                                          .Where(type => type.IsClass && !type.IsAbstract)
+                                                          .Where(type => jobRunnerType.IsAssignableFrom(type) && type.BaseType?.IsAbstract == true)
+                                                          .ToDictionary(type => type.BaseType.GetGenericArguments().First());
         }
 
         /// <summary>
         /// Build a Job runner for the given job
         /// </summary>
-        public IJobRunner Build(IJob job)
+        internal IJobRunner Build(IJob job)
         {
-            var typeOfJob    = job.GetType();
-            var typeOfRunner = _jobTypeToRunnerTypeDictionary[typeOfJob].MakeGenericType(typeOfJob);
-            return (IJobRunner) Activator.CreateInstance(typeOfRunner, job);
+            var mainTypeJob = job.GetType();
+            if (!_jobToRunner.TryGetValue(mainTypeJob, out var runner))
+            {
+                var typeOfJob = mainTypeJob.GetInterfaces().Intersect(_jobTypeToRunnerTypeDictionary.Keys).First();
+                runner = _jobTypeToRunnerTypeDictionary[typeOfJob];
+                _jobToRunner.Add(mainTypeJob, runner);
+            }
+
+            return (IJobRunner) Activator.CreateInstance(runner, job);
         }
     }
 }
