@@ -24,6 +24,9 @@ public class MyJob : IRecurringJob
 
     public Task<bool> OnFailure(JobException exception)
     {
+//Any exception that occured when executing your job will be wrapped in a JobException, check the InnerException
+//for you to be able to handle a failure without breaking your application neither needed a try/catch in ExecuteAsync
+
 //Continue to run if the job has failed
 //You can handle your self what to do in case of failure
 //Returning false, will make the job stop
