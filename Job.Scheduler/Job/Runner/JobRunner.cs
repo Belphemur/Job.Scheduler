@@ -3,11 +3,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Job.Scheduler.Job.Exception;
 
-namespace Job.Scheduler.Job
+namespace Job.Scheduler.Job.Runner
 {
-    internal class JobRunner
+    internal abstract class JobRunner<T> : IJobRunner where T : IJob
     {
-        private readonly IJob                    _job;
+        private readonly T                       _job;
         private          CancellationTokenSource _cancellationTokenSource;
         private          Task                    _runningTask;
         private volatile bool                    _isDone;
@@ -39,11 +39,15 @@ namespace Job.Scheduler.Job
         /// </summary>
         public bool IsRunning => _cancellationTokenSource != null && !IsDone;
 
-        public JobRunner(IJob job)
+        public JobRunner(T job)
         {
             _job = job;
         }
 
+        /// <summary>
+        /// Start the job
+        /// </summary>
+        protected abstract Task StartJobAsync(T job, CancellationToken token);
 
         /// <summary>
         /// Run the job
@@ -58,34 +62,9 @@ namespace Job.Scheduler.Job
             }
 
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-            if (_job is IRecurringJob recurringJob)
-            {
-                _runningTask = StartRecurringJobAsync(recurringJob, _cancellationTokenSource.Token);
-            }
-            else if (_job is IDelayedJob delayedJob)
-            {
-                _runningTask = StartDelayedJobAsync(delayedJob, _cancellationTokenSource.Token);
-            }
-            else
-            {
-                _runningTask = StartOneTimeJobAsync(_job, _cancellationTokenSource.Token);
-            }
+
+            _runningTask = StartJobAsync(_job, token);
         }
-
-        private Task StartDelayedJobAsync(IDelayedJob delayedJob, CancellationToken token)
-        {
-            return RunAsyncWithDone(async cancellationToken =>
-            {
-                await Task.Delay(delayedJob.Delay, cancellationToken);
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                await ExecuteJob(delayedJob, cancellationToken);
-            }, token);
-        }
-
 
         /// <summary>
         /// Stop the task and wait for it to terminate
@@ -98,32 +77,13 @@ namespace Job.Scheduler.Job
             _cancellationTokenSource.Dispose();
         }
 
-
-        private Task StartRecurringJobAsync(IRecurringJob job, CancellationToken token)
-        {
-            return RunAsyncWithDone(async cancellationToken =>
-            {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    if (!await ExecuteJob(job, cancellationToken)) break;
-
-                    await Task.Delay(job.Delay, cancellationToken);
-                }
-            }, token);
-        }
-
-        private Task StartOneTimeJobAsync(IJob job, CancellationToken token)
-        {
-            return RunAsyncWithDone(cancellationToken => ExecuteJob(job, cancellationToken), token);
-        }
-
         /// <summary>
-        /// Set the runner as done after running the given code
+        /// Set the runner as done after running the given <see cref="task"/>
         /// </summary>
         /// <param name="task"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        private Task RunAsyncWithDone(Func<CancellationToken, Task> task, CancellationToken token)
+        protected Task RunAsyncWithDone(Func<CancellationToken, Task> task, CancellationToken token)
         {
             try
             {
@@ -142,7 +102,7 @@ namespace Job.Scheduler.Job
         /// <param name="token"></param>
         /// <returns>true if the job should still be running, false if it shouldn't</returns>
         /// <exception cref="JobException"></exception>
-        private async Task<bool> ExecuteJob(IJob job, CancellationToken token)
+        protected async Task<bool> ExecuteJob(IJob job, CancellationToken token)
         {
             try
             {

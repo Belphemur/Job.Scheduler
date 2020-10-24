@@ -4,13 +4,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Job.Scheduler.Bootstrap;
 using Job.Scheduler.Job;
+using Job.Scheduler.Job.Runner;
 
 namespace Job.Scheduler.Scheduler
 {
     public class JobScheduler : IJobScheduler
     {
-        private readonly ConcurrentDictionary<Guid, JobRunner> _jobs = new ConcurrentDictionary<Guid, JobRunner>();
+        private readonly ConcurrentDictionary<Guid, IJobRunner> _jobs = new ConcurrentDictionary<Guid, IJobRunner>();
+        private readonly JobRunnerBuilder                       _jobRunnerBuilder;
+
+        internal JobScheduler(JobRunnerBuilder jobRunnerBuilder)
+        {
+            _jobRunnerBuilder = jobRunnerBuilder;
+        }
 
         /// <summary>
         /// Schedule a new job to run
@@ -19,8 +27,8 @@ namespace Job.Scheduler.Scheduler
         /// <param name="token"></param>
         public void ScheduleJob(IJob job, CancellationToken token = default)
         {
-            var runner = new JobRunner(job);
-            runner.JobDone += (sender, args) => _jobs.Remove(((JobRunner) sender).UniqueId, out _);
+            var runner = _jobRunnerBuilder.Build(job);
+            runner.JobDone += (sender, args) => _jobs.Remove(((IJobRunner) sender).UniqueId, out _);
             _jobs.TryAdd(runner.UniqueId, runner);
             runner.Start(token);
         }
