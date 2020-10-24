@@ -4,7 +4,7 @@ using System.Linq;
 using Job.Scheduler.Job;
 using Job.Scheduler.Job.Runner;
 
-namespace Job.Scheduler.Bootstrap
+namespace Job.Scheduler.Builder
 {
     public class JobRunnerBuilder
     {

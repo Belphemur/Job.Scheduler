@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Job.Scheduler.Bootstrap;
+using Job.Scheduler.Builder;
 using Job.Scheduler.Job;
 using Job.Scheduler.Job.Runner;
 

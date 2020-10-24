@@ -1,11 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     </PropertyGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Ninject" Version="3.3.4" />
-    </ItemGroup>
 
 </Project>

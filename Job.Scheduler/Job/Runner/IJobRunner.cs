@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Job.Scheduler.Job.Runner
 {
-    internal interface IJobRunner
+    public interface IJobRunner
     {
         event EventHandler JobDone;
 
