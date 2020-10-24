@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Job.Scheduler.Utils;
 
 namespace Job.Scheduler.Job.Runner
 {
@@ -15,7 +16,7 @@ namespace Job.Scheduler.Job.Runner
             {
                 if (!await ExecuteJob(job, token)) break;
 
-                await Task.Delay(job.Delay, token);
+                await TaskUtils.WaitForDelayOrCancellation(job.Delay, token);
             }
         }
     }
