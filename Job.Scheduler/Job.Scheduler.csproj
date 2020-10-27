@@ -4,8 +4,14 @@
         <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Ninject" Version="3.3.4" />
-    </ItemGroup>
+    <PropertyGroup>
+        <PackageId>Job.Scheduler</PackageId>
+        <Version>1.0.1</Version>
+        <Authors>Antoine Aflalo</Authors>
+        <Description>A simple job scheduling library relying on the async/await pattern in C#. Supports Recurring Jobs, Delayed Jobs and One Time Jobs.</Description>
+        <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/Belphemur/Spotitoast/tree/master/Job.Scheduler</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Belphemur/Spotitoast</RepositoryUrl>
+    </PropertyGroup>
 
 </Project>

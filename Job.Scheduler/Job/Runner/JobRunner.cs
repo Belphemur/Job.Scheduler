@@ -4,15 +4,15 @@ using System.Threading.Tasks;
 using Job.Scheduler.Job.Exception;
 using Job.Scheduler.Utils;
 
-namespace Job.Scheduler.Job
+namespace Job.Scheduler.Job.Runner
 {
-    internal class JobRunner
+    internal abstract class JobRunner<T> : IJobRunner where T : IJob
     {
-        private readonly IJob _job;
-        private CancellationTokenSource _cancellationTokenSource;
-        private Task _runningTask;
-        private volatile bool _isDone;
-        public event EventHandler JobDone;
+        private readonly T                       _job;
+        private          CancellationTokenSource _cancellationTokenSource;
+        private          Task                    _runningTask;
+        private volatile bool                    _isDone;
+        public event EventHandler                JobDone;
 
         /// <summary>
         /// Unique ID of the job runner
@@ -40,11 +40,15 @@ namespace Job.Scheduler.Job
         /// </summary>
         public bool IsRunning => _cancellationTokenSource != null && !IsDone;
 
-        public JobRunner(IJob job)
+        public JobRunner(T job)
         {
             _job = job;
         }
 
+        /// <summary>
+        /// Start the job
+        /// </summary>
+        protected abstract Task StartJobAsync(T job, CancellationToken token);
 
         /// <summary>
         /// Run the job
@@ -59,49 +63,31 @@ namespace Job.Scheduler.Job
             }
 
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-            if (_job is IRecurringJob job)
-            {
-                _runningTask = StartRecurringJobAsync(job, _cancellationTokenSource.Token);
-            }
-            else
-            {
-                _runningTask = StartOneTimeJobAsync(_job, _cancellationTokenSource.Token);
-            }
+
+            _runningTask = RunAsyncWithDone(() => StartJobAsync(_job, _cancellationTokenSource.Token));
         }
 
-        /// <summary>
-        /// Stop the task and wait for it to terminate
-        /// </summary>
-        /// <returns></returns>
-        public async Task StopAsync()
+
+        public async Task StopAsync(CancellationToken token)
         {
             _cancellationTokenSource.Cancel();
-            await _runningTask;
+            await Task.WhenAny(TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(-1), token), _runningTask);
             _cancellationTokenSource.Dispose();
         }
 
-
-        private async Task StartRecurringJobAsync(IRecurringJob job, CancellationToken token)
+        /// <summary>
+        /// Set the runner as done after running the given <see cref="task"/>
+        /// </summary>
+        private async Task RunAsyncWithDone(Func<Task> task)
         {
-            while (!token.IsCancellationRequested)
+            try
             {
-                if (!await ExecuteJob(job, token)) break;
-
-                await TaskUtils.WaitForTokenShutdownAsync(token).WaitAsync(job.Delay);
+                await task();
             }
-
-            IsDone = true;
-        }
-
-        private async Task StartOneTimeJobAsync(IJob job, CancellationToken token)
-        {
-            if (token.IsCancellationRequested)
+            finally
             {
-                return;
+                _isDone = true;
             }
-
-            await ExecuteJob(job, token);
-            IsDone = true;
         }
 
         /// <summary>
@@ -111,7 +97,7 @@ namespace Job.Scheduler.Job
         /// <param name="token"></param>
         /// <returns>true if the job should still be running, false if it shouldn't</returns>
         /// <exception cref="JobException"></exception>
-        private async Task<bool> ExecuteJob(IJob job, CancellationToken token)
+        protected async Task<bool> ExecuteJob(IJob job, CancellationToken token)
         {
             try
             {
