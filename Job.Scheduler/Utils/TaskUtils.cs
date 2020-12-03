@@ -16,9 +16,14 @@ namespace Job.Scheduler.Utils
         {
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            await using var _ = token.Register(o => tcs.SetResult(null), null);
+            var cts = new CancellationTokenSource();
+            await using var _ = token.Register(o => 
+                                               {
+                                                   tcs.SetResult(null);
+                                                   cts.Cancel();
+                                               }, null);
 
-            await Task.WhenAny(tcs.Task, Task.Delay(delay));
+            await Task.WhenAny(tcs.Task, Task.Delay(delay, cts.Token));
         }
     }
 }
