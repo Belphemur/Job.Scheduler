@@ -17,11 +17,13 @@ namespace Job.Scheduler.Utils
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var cts = new CancellationTokenSource();
-            await using var _ = token.Register(o => 
-                                               {
-                                                   tcs.SetResult(null);
-                                                   cts.Cancel();
-                                               }, null);
+            await using var _ = token
+                .Register(o =>
+                    {
+                        tcs.SetResult(null);
+                        cts.Cancel();
+                    },
+                    null);
 
             await Task.WhenAny(tcs.Task, Task.Delay(delay, cts.Token));
         }
