@@ -25,6 +25,11 @@ namespace Job.Scheduler.Scheduler
         /// <summary>
         /// Stop the given job
         /// </summary>
-        Task StopAsync(JobId job, CancellationToken token);
+        Task StopAsync(JobId jobId, CancellationToken token);
+
+        /// <summary>
+        /// Is the job present in the scheduler
+        /// </summary>
+        bool HasJob(JobId jobId);
     }
 }

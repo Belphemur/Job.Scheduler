@@ -34,16 +34,16 @@ namespace Job.Scheduler.Tests
 
             public int Retry { get; private set; } = 0;
 
-            public Task ExecuteAsync(CancellationToken cancellationToken)
+            public async Task ExecuteAsync(CancellationToken cancellationToken)
             {
                 Retry++;
-                if (Retry < 3)
+                await Console.Out.WriteLineAsync($"Has run {Retry}");
+                if (Retry < 4)
                 {
                     throw new Exception("Test");
                 }
 
                 HasRun = true;
-                return Task.CompletedTask;
             }
 
             public Task<bool> OnFailure(JobException exception)
@@ -66,9 +66,10 @@ namespace Job.Scheduler.Tests
         public async Task OneTimeJob()
         {
             var job = new OnTimeJob();
-            _scheduler.ScheduleJob(job);
+            var jobId = _scheduler.ScheduleJob(job);
             await _scheduler.StopAsync();
             job.HasRun.Should().BeTrue();
+            _scheduler.HasJob(jobId).Should().BeFalse();
         }
 
 
@@ -79,7 +80,7 @@ namespace Job.Scheduler.Tests
             _scheduler.ScheduleJob(job);
             await Task.Delay(TimeSpan.FromMilliseconds(100));
             await _scheduler.StopAsync();
-            job.HasRun.Should().BeTrue();
+            job.HasRun.Should().BeFalse();
             job.Retry.Should().Be(3);
         }
     }

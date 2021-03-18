@@ -48,9 +48,9 @@ namespace Job.Scheduler.Scheduler
         /// <summary>
         /// Stop the given job
         /// </summary>
-        public async Task StopAsync(JobId job, CancellationToken token)
+        public async Task StopAsync(JobId jobId, CancellationToken token)
         {
-            _jobs.TryGetValue(job.UniqueId, out var jobRunner);
+            _jobs.TryGetValue(jobId.UniqueId, out var jobRunner);
             if (jobRunner == null)
             {
                 return;
@@ -58,6 +58,11 @@ namespace Job.Scheduler.Scheduler
 
             await jobRunner.StopAsync(token);
         }
+
+        /// <summary>
+        /// Is the job present in the scheduler
+        /// </summary>
+        public bool HasJob(JobId jobId) => _jobs.TryGetValue(jobId.UniqueId, out _);
 
         /// <summary>
         /// Stop the task and wait for it to terminate.
