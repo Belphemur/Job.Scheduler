@@ -6,7 +6,7 @@ using Job.Scheduler.Job.Runner;
 
 namespace Job.Scheduler.Builder
 {
-    public class JobRunnerBuilder
+    public class JobRunnerBuilder : IJobRunnerBuilder
     {
         private readonly Dictionary<Type, Type> _jobTypeToRunnerTypeDictionary;
         private readonly Dictionary<Type, Type> _jobToRunner = new Dictionary<Type, Type>();
@@ -23,7 +23,7 @@ namespace Job.Scheduler.Builder
         /// <summary>
         /// Build a Job runner for the given job
         /// </summary>
-        internal IJobRunner Build(IJob job)
+        public IJobRunner Build(IJob job)
         {
             var mainTypeJob = job.GetType();
             if (!_jobToRunner.TryGetValue(mainTypeJob, out var runner))

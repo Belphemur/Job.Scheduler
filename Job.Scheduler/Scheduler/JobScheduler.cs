@@ -13,9 +13,9 @@ namespace Job.Scheduler.Scheduler
     public class JobScheduler : IJobScheduler
     {
         private readonly ConcurrentDictionary<Guid, IJobRunner> _jobs = new ConcurrentDictionary<Guid, IJobRunner>();
-        private readonly JobRunnerBuilder                       _jobRunnerBuilder;
+        private readonly IJobRunnerBuilder _jobRunnerBuilder;
 
-        public JobScheduler(JobRunnerBuilder jobRunnerBuilder)
+        public JobScheduler(IJobRunnerBuilder jobRunnerBuilder)
         {
             _jobRunnerBuilder = jobRunnerBuilder;
         }
