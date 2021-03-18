@@ -12,6 +12,11 @@ namespace Job.Scheduler.Job.Runner
         Guid UniqueId { get; }
 
         /// <summary>
+        /// Is the job still running
+        /// </summary>
+        bool IsRunning { get; }
+
+        /// <summary>
         /// Run the job
         /// </summary>
         /// <param name="token">Optional token to sync with it</param>

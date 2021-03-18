@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Job.Scheduler.Builder;
 using Job.Scheduler.Job;
+using Job.Scheduler.Job.Data;
 using Job.Scheduler.Job.Runner;
 
 namespace Job.Scheduler.Scheduler
@@ -25,7 +26,7 @@ namespace Job.Scheduler.Scheduler
         /// </summary>
         /// <param name="job"></param>
         /// <param name="token"></param>
-        public void ScheduleJob(IJob job, CancellationToken token = default)
+        public JobId ScheduleJob(IJob job, CancellationToken token = default)
         {
             var runner = _jobRunnerBuilder.Build(job, async jobRunner =>
             {
@@ -41,6 +42,21 @@ namespace Job.Scheduler.Scheduler
             });
             _jobs.TryAdd(runner.UniqueId, runner);
             runner.Start(token);
+            return new JobId(runner.UniqueId);
+        }
+
+        /// <summary>
+        /// Stop the given job
+        /// </summary>
+        public async Task StopAsync(JobId job, CancellationToken token)
+        {
+            _jobs.TryGetValue(job.UniqueId, out var jobRunner);
+            if (jobRunner == null)
+            {
+                return;
+            }
+
+            await jobRunner.StopAsync(token);
         }
 
         /// <summary>

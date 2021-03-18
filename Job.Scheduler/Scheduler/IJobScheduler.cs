@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Job.Scheduler.Job;
+using Job.Scheduler.Job.Data;
 
 namespace Job.Scheduler.Scheduler
 {
@@ -11,7 +12,7 @@ namespace Job.Scheduler.Scheduler
         /// </summary>
         /// <param name="job"></param>
         /// <param name="token"></param>
-        void ScheduleJob(IJob job, CancellationToken token = default);
+        JobId ScheduleJob(IJob job, CancellationToken token = default);
 
         /// <summary>
         /// Stop asynchronously any running job
@@ -20,5 +21,10 @@ namespace Job.Scheduler.Scheduler
         /// <param name="token"></param>
         /// <returns></returns>
         Task StopAsync(CancellationToken token = default);
+
+        /// <summary>
+        /// Stop the given job
+        /// </summary>
+        Task StopAsync(JobId job, CancellationToken token);
     }
 }
