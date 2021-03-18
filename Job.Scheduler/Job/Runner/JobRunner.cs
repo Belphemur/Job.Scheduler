@@ -61,7 +61,7 @@ namespace Job.Scheduler.Job.Runner
             {
                 throw new InvalidOperationException("Can't start a running job");
             }
-
+            
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
             _runningTask = RunAsyncWithDone(() => StartJobAsync(_job, _cancellationTokenSource.Token));
@@ -86,7 +86,7 @@ namespace Job.Scheduler.Job.Runner
             }
             finally
             {
-                _isDone = true;
+                IsDone = true;
             }
         }
 
