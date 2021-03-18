@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Job.Scheduler.Job.Runner
 {
-    public interface IJobRunner
+    public interface IJobRunner : IDisposable
     {
         /// <summary>
         /// Unique ID of the job runner

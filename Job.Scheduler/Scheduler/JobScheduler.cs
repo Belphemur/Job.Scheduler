@@ -29,8 +29,15 @@ namespace Job.Scheduler.Scheduler
         {
             var runner = _jobRunnerBuilder.Build(job, async jobRunner =>
             {
-                await jobRunner.StopAsync(default);
                 _jobs.Remove(jobRunner.UniqueId, out _);
+                try
+                {
+                    await jobRunner.StopAsync(default);
+                }
+                finally
+                {
+                    jobRunner.Dispose();
+                }
             });
             _jobs.TryAdd(runner.UniqueId, runner);
             runner.Start(token);

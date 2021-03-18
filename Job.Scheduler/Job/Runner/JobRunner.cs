@@ -11,7 +11,6 @@ namespace Job.Scheduler.Job.Runner
         private readonly T _job;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
-        private volatile bool _isDone;
 
         /// <summary>
         /// Unique ID of the job runner
@@ -19,22 +18,14 @@ namespace Job.Scheduler.Job.Runner
         public Guid UniqueId { get; } = Guid.NewGuid();
 
         /// <summary>
-        /// Has the job finished running
-        /// </summary>
-        public bool IsDone
-        {
-            get => _isDone;
-            private set => _isDone = value;
-        }
-        /// <summary>
         /// Run when the job is Done
         /// </summary>
-        public Func<IJobRunner,Task> JobDone { get; }
+        public Func<IJobRunner, Task> JobDone { get; }
 
         /// <summary>
         /// Is the job still running
         /// </summary>
-        public bool IsRunning => _cancellationTokenSource != null && !IsDone;
+        public bool IsRunning => _cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested;
 
         public JobRunner(T job, Func<IJobRunner, Task> jobDone)
         {
@@ -67,9 +58,12 @@ namespace Job.Scheduler.Job.Runner
 
         public async Task StopAsync(CancellationToken token)
         {
+            if (!IsRunning)
+            {
+                return;
+            }
             _cancellationTokenSource.Cancel();
             await Task.WhenAny(TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(-1), token), _runningTask);
-            _cancellationTokenSource.Dispose();
         }
 
         /// <summary>
@@ -83,7 +77,6 @@ namespace Job.Scheduler.Job.Runner
             }
             finally
             {
-                IsDone = true;
                 await JobDone(this);
             }
         }
@@ -117,6 +110,12 @@ namespace Job.Scheduler.Job.Runner
             }
 
             return true;
+        }
+
+        public void Dispose()
+        {
+            _cancellationTokenSource?.Dispose();
+            _runningTask?.Dispose();
         }
     }
 }
