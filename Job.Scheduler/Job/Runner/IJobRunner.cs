@@ -6,8 +6,6 @@ namespace Job.Scheduler.Job.Runner
 {
     public interface IJobRunner
     {
-        event EventHandler JobDone;
-
         /// <summary>
         /// Unique ID of the job runner
         /// </summary>

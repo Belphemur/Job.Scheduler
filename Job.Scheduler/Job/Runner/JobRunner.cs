@@ -8,11 +8,10 @@ namespace Job.Scheduler.Job.Runner
 {
     internal abstract class JobRunner<T> : IJobRunner where T : IJob
     {
-        private readonly T                       _job;
-        private          CancellationTokenSource _cancellationTokenSource;
-        private          Task                    _runningTask;
-        private volatile bool                    _isDone;
-        public event EventHandler                JobDone;
+        private readonly T _job;
+        private CancellationTokenSource _cancellationTokenSource;
+        private Task _runningTask;
+        private volatile bool _isDone;
 
         /// <summary>
         /// Unique ID of the job runner
@@ -25,24 +24,22 @@ namespace Job.Scheduler.Job.Runner
         public bool IsDone
         {
             get => _isDone;
-            private set
-            {
-                _isDone = value;
-                if (_isDone)
-                {
-                    JobDone?.Invoke(this, EventArgs.Empty);
-                }
-            }
+            private set => _isDone = value;
         }
+        /// <summary>
+        /// Run when the job is Done
+        /// </summary>
+        public Func<IJobRunner,Task> JobDone { get; }
 
         /// <summary>
         /// Is the job still running
         /// </summary>
         public bool IsRunning => _cancellationTokenSource != null && !IsDone;
 
-        public JobRunner(T job)
+        public JobRunner(T job, Func<IJobRunner, Task> jobDone)
         {
             _job = job;
+            JobDone = jobDone;
         }
 
         /// <summary>
@@ -61,7 +58,7 @@ namespace Job.Scheduler.Job.Runner
             {
                 throw new InvalidOperationException("Can't start a running job");
             }
-            
+
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
             _runningTask = RunAsyncWithDone(() => StartJobAsync(_job, _cancellationTokenSource.Token));
@@ -87,6 +84,7 @@ namespace Job.Scheduler.Job.Runner
             finally
             {
                 IsDone = true;
+                await JobDone(this);
             }
         }
 

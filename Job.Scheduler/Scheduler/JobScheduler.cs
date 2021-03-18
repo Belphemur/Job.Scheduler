@@ -27,8 +27,11 @@ namespace Job.Scheduler.Scheduler
         /// <param name="token"></param>
         public void ScheduleJob(IJob job, CancellationToken token = default)
         {
-            var runner = _jobRunnerBuilder.Build(job);
-            runner.JobDone += (sender, args) => _jobs.Remove(((IJobRunner) sender).UniqueId, out _);
+            var runner = _jobRunnerBuilder.Build(job, async jobRunner =>
+            {
+                await jobRunner.StopAsync(default);
+                _jobs.Remove(jobRunner.UniqueId, out _);
+            });
             _jobs.TryAdd(runner.UniqueId, runner);
             runner.Start(token);
         }
