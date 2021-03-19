@@ -1,59 +1,14 @@
-using System;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Job.Scheduler.Builder;
-using Job.Scheduler.Job;
-using Job.Scheduler.Job.Action;
-using Job.Scheduler.Job.Exception;
 using Job.Scheduler.Scheduler;
+using Job.Scheduler.Tests.Mocks;
 using NUnit.Framework;
 
 namespace Job.Scheduler.Tests
 {
     public class Tests
     {
-        public class OnTimeJob : IJob
-        {
-            public bool HasRun { get; private set; }
-
-            public IRetryAction FailRule { get; } = new NoRetry();
-            public TimeSpan? MaxRuntime { get; }
-
-            public Task ExecuteAsync(CancellationToken cancellationToken)
-            {
-                HasRun = true;
-                return Task.CompletedTask;
-            }
-
-            public Task OnFailure(JobException exception)
-            {
-                return Task.FromResult<IRetryAction>(new AlwaysRetry());
-            }
-        }
-
-        public class RecurringJobRetry : IRecurringJob
-        {
-
-            public int Ran { get; private set; }
-
-            public IRetryAction FailRule { get; } = new RetryNTimes(3);
-            public TimeSpan? MaxRuntime { get; }
-
-            public Task ExecuteAsync(CancellationToken cancellationToken)
-            {
-                Ran++;
-                throw new Exception("Test");
-            }
-
-            public Task OnFailure(JobException exception)
-            {
-                return Task.CompletedTask;
-            }
-
-            public TimeSpan Delay { get; } = TimeSpan.FromMilliseconds(10);
-        }
-
         private IJobScheduler _scheduler;
 
         [SetUp]
@@ -65,7 +20,7 @@ namespace Job.Scheduler.Tests
         [Test]
         public async Task OneTimeJob()
         {
-            var job = new OnTimeJob();
+            var job = new OneTimeJob();
             var jobId = _scheduler.ScheduleJob(job);
             var jobRunner = _scheduler.GetJobRunner(jobId);
             await jobRunner.WaitForJob();
@@ -82,6 +37,16 @@ namespace Job.Scheduler.Tests
             var jobRunner = _scheduler.GetJobRunner(jobId);
             await jobRunner.WaitForJob();
             job.Ran.Should().Be(4);
+        }
+
+        [Test]
+        public async Task MaxRuntimeIsRespected()
+        {
+            var job = new MaxRuntimeJob();
+            var jobId = _scheduler.ScheduleJob(job);
+            var jobRunner = _scheduler.GetJobRunner(jobId);
+            await jobRunner.WaitForJob();
+            jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value);
         }
     }
 }
