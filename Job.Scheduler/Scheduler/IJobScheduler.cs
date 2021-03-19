@@ -32,12 +32,12 @@ namespace Job.Scheduler.Scheduler
         /// Is the job present in the scheduler
         /// </summary>
         bool HasJob(JobId jobId);
-
+        
         /// <summary>
-        /// Used for test to be able to get the <see cref="IJobRunner"/>
+        /// Schedule a new job to run, internal
         /// </summary>
-        /// <param name="jobId"></param>
-        /// <returns></returns>
-        internal IJobRunner GetJobRunner(JobId jobId);
+        /// <param name="job"></param>
+        /// <param name="token"></param>
+        internal IJobRunner ScheduleJobInternal(IJob job, CancellationToken token = default);
     }
 }

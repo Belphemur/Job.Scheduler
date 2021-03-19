@@ -28,20 +28,7 @@ namespace Job.Scheduler.Scheduler
         /// <param name="token"></param>
         public JobId ScheduleJob(IJob job, CancellationToken token = default)
         {
-            var runner = _jobRunnerBuilder.Build(job, async jobRunner =>
-            {
-                _jobs.Remove(jobRunner.UniqueId, out _);
-                try
-                {
-                    await jobRunner.StopAsync(default);
-                }
-                finally
-                {
-                    jobRunner.Dispose();
-                }
-            });
-            _jobs.TryAdd(runner.UniqueId, runner);
-            runner.Start(token);
+            var runner = ((IJobScheduler) this).ScheduleJobInternal(job, token);
             return new JobId(runner.UniqueId);
         }
 
@@ -64,10 +51,23 @@ namespace Job.Scheduler.Scheduler
         /// </summary>
         public bool HasJob(JobId jobId) => _jobs.TryGetValue(jobId.UniqueId, out _);
 
-        IJobRunner IJobScheduler.GetJobRunner(JobId jobId)
+        IJobRunner IJobScheduler.ScheduleJobInternal(IJob job, CancellationToken token)
         {
-            _jobs.TryGetValue(jobId.UniqueId, out var jobRunner);
-            return jobRunner;
+            var runner = _jobRunnerBuilder.Build(job, async jobRunner =>
+            {
+                _jobs.Remove(jobRunner.UniqueId, out _);
+                try
+                {
+                    await jobRunner.StopAsync(default);
+                }
+                finally
+                {
+                    jobRunner.Dispose();
+                }
+            });
+            _jobs.TryAdd(runner.UniqueId, runner);
+            runner.Start(token);
+            return runner;
         }
 
         /// <summary>

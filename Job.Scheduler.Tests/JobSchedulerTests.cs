@@ -8,6 +8,7 @@ using NUnit.Framework;
 
 namespace Job.Scheduler.Tests
 {
+    [Parallelizable(ParallelScope.Children)]
     public class Tests
     {
         private IJobScheduler _scheduler;
@@ -29,11 +30,9 @@ namespace Job.Scheduler.Tests
         public async Task OneTimeJob()
         {
             var job = new OneTimeJob();
-            var jobId = _scheduler.ScheduleJob(job);
-            var jobRunner = _scheduler.GetJobRunner(jobId);
+            var jobRunner = _scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             job.HasRun.Should().BeTrue();
-            _scheduler.HasJob(jobId).Should().BeFalse();
         }
 
 
@@ -41,8 +40,7 @@ namespace Job.Scheduler.Tests
         public async Task FailingJobShouldRetry()
         {
             var job = new FailingRetringJob();
-            var jobId = _scheduler.ScheduleJob(job);
-            var jobRunner = _scheduler.GetJobRunner(jobId);
+            var jobRunner = _scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             job.Ran.Should().Be(4);
             jobRunner.Retries.Should().Be(3);
@@ -52,8 +50,7 @@ namespace Job.Scheduler.Tests
         public async Task MaxRuntimeIsRespected()
         {
             var job = new MaxRuntimeJob(new NoRetry());
-            var jobId = _scheduler.ScheduleJob(job);
-            var jobRunner = _scheduler.GetJobRunner(jobId);
+            var jobRunner = _scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value);
         }
@@ -62,8 +59,7 @@ namespace Job.Scheduler.Tests
         public async Task MaxRuntimeIsRespectedAndTaskRetried()
         {
             var job = new MaxRuntimeJob(new RetryNTimes(2));
-            var jobId = _scheduler.ScheduleJob(job);
-            var jobRunner = _scheduler.GetJobRunner(jobId);
+            var jobRunner = _scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value * 3);
         }
