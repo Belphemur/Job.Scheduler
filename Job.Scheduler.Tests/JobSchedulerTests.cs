@@ -8,7 +8,6 @@ using NUnit.Framework;
 
 namespace Job.Scheduler.Tests
 {
-    [Parallelizable(ParallelScope.Children)]
     public class Tests
     {
         private IJobScheduler _scheduler;
