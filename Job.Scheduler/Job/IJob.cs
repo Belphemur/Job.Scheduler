@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Job.Scheduler.Job.Action;
 using Job.Scheduler.Job.Exception;
 
 namespace Job.Scheduler.Job
@@ -18,8 +19,9 @@ namespace Job.Scheduler.Job
         /// What to do on failure
         /// </summary>
         /// <param name="exception"></param>
-        /// <returns>True to retry, false to stop</returns>
-        Task<bool> OnFailure(JobException exception);
+        /// <param name="previousRetry">the previous retry if this has been already retried</param>
+        /// <returns>What action to take now, doesn't have to be the one that was taken before.</returns>
+        Task<IRetryAction> OnFailure(JobException exception, IRetryAction? previousRetry);
     }
 
     /// <summary>

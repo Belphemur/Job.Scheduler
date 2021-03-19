@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Job.Scheduler.Builder;
 using Job.Scheduler.Job;
+using Job.Scheduler.Job.Action;
 using Job.Scheduler.Job.Exception;
 using Job.Scheduler.Scheduler;
 using NUnit.Framework;
@@ -22,9 +23,9 @@ namespace Job.Scheduler.Tests
                 return Task.CompletedTask;
             }
 
-            public Task<bool> OnFailure(JobException exception)
+            public Task<IRetryAction> OnFailure(JobException exception, IRetryAction? previousRetry)
             {
-                return Task.FromResult(true);
+                return Task.FromResult<IRetryAction>(new AlwaysRetry());
             }
         }
 
@@ -46,9 +47,9 @@ namespace Job.Scheduler.Tests
                 HasRun = true;
             }
 
-            public Task<bool> OnFailure(JobException exception)
+            public Task<IRetryAction> OnFailure(JobException exception, IRetryAction? previousRetry)
             {
-                return Task.FromResult(Retry < 3);
+                return Task.FromResult<IRetryAction>(new RetryNTimes(3));
             }
 
             public TimeSpan Delay { get; } = TimeSpan.FromMilliseconds(10);

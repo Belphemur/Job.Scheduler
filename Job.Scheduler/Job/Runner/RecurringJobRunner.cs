@@ -15,7 +15,7 @@ namespace Job.Scheduler.Job.Runner
         {
             while (!token.IsCancellationRequested)
             {
-                if (!await ExecuteJob(job, token)) break;
+                await ExecuteJob(job, token);
 
                 await TaskUtils.WaitForDelayOrCancellation(job.Delay, token);
             }

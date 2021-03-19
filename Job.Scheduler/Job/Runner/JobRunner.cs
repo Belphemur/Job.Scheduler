@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Job.Scheduler.Job.Action;
 using Job.Scheduler.Job.Exception;
 using Job.Scheduler.Utils;
 
@@ -11,6 +12,8 @@ namespace Job.Scheduler.Job.Runner
         private readonly T _job;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
+        private int _retries = 0;
+        private IRetryAction? _lastRetry;
 
         /// <summary>
         /// Unique ID of the job runner
@@ -62,6 +65,7 @@ namespace Job.Scheduler.Job.Runner
             {
                 return;
             }
+
             _cancellationTokenSource.Cancel();
             await Task.WhenAny(TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(-1), token), _runningTask);
         }
@@ -88,7 +92,7 @@ namespace Job.Scheduler.Job.Runner
         /// <param name="token"></param>
         /// <returns>true if the job should still be running, false if it shouldn't</returns>
         /// <exception cref="JobException"></exception>
-        protected async Task<bool> ExecuteJob(IJob job, CancellationToken token)
+        protected async Task ExecuteJob(IJob job, CancellationToken token)
         {
             try
             {
@@ -98,9 +102,15 @@ namespace Job.Scheduler.Job.Runner
             {
                 try
                 {
-                    if (!await job.OnFailure(new JobException("Job Failed", e)))
+                    _lastRetry = await job.OnFailure(new JobException("Job Failed", e), _lastRetry);
+                    if (_lastRetry.ShouldRetry(_retries++))
                     {
-                        return false;
+                        if (_lastRetry.DelayBetweenRetries.HasValue)
+                        {
+                            await TaskUtils.WaitForDelayOrCancellation(_lastRetry.DelayBetweenRetries.Value, token);
+                        }
+
+                        await ExecuteJob(job, token);
                     }
                 }
                 catch (System.Exception failureException)
@@ -108,8 +118,6 @@ namespace Job.Scheduler.Job.Runner
                     throw new JobException("Fail to handle failure of job", failureException);
                 }
             }
-
-            return true;
         }
 
         public void Dispose()
