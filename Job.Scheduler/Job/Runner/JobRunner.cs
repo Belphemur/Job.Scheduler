@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Job.Scheduler.Job.Action;
@@ -16,23 +17,15 @@ namespace Job.Scheduler.Job.Runner
         private readonly T _job;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
+        private Task _runningTaskWithDone;
         private int _retries = 0;
-        private static readonly NoRetry DefaultFailRule = new NoRetry();
-
-        /// <summary>
-        /// Unique ID of the job runner
-        /// </summary>
-        public Guid UniqueId { get; } = Guid.NewGuid();
-
-        /// <summary>
-        /// Run when the job is Done
-        /// </summary>
+        private static readonly IRetryAction DefaultFailRule = new NoRetry();
+        private readonly Stopwatch _stopwatch = new();
         private readonly Func<IJobRunner, Task> _jobDone;
 
-        /// <summary>
-        /// Is the job still running
-        /// </summary>
+        public Guid UniqueId { get; } = Guid.NewGuid();
         public bool IsRunning => _cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested;
+        public TimeSpan Elapsed => _stopwatch.Elapsed;
 
         protected JobRunner(T job, Func<IJobRunner, Task> jobDone)
         {
@@ -57,41 +50,36 @@ namespace Job.Scheduler.Job.Runner
                 throw new InvalidOperationException("Can't start a running job");
             }
 
+            _stopwatch.Start();
+
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
-            _runningTask = RunAsyncWithDone(() => StartJobAsync(_job, _cancellationTokenSource.Token));
+            _runningTask = StartJobAsync(_job, _cancellationTokenSource.Token);
+            _runningTaskWithDone = _runningTask.ContinueWith(task => _jobDone(this), CancellationToken.None);
         }
 
 
-        public async Task StopAsync(CancellationToken token)
+        /// <summary>
+        /// Stop the job and wait for either the cancellation token or the task to finish
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns>How long did the job run in total</returns>
+        public async Task<TimeSpan> StopAsync(CancellationToken token)
         {
             if (!IsRunning)
             {
-                return;
+                return TimeSpan.Zero;
             }
 
             _cancellationTokenSource.Cancel();
-            await Task.WhenAny(TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(-1), token), _runningTask);
+            await Task.WhenAny(TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(-1), token), _runningTaskWithDone);
+            _stopwatch.Stop();
+            return _stopwatch.Elapsed;
         }
 
         Task IJobRunner.WaitForJob()
         {
-            return _runningTask;
-        }
-
-        /// <summary>
-        /// Set the runner as done after running the given <see cref="task"/>
-        /// </summary>
-        private async Task RunAsyncWithDone(Func<Task> task)
-        {
-            try
-            {
-                await task();
-            }
-            finally
-            {
-                await _jobDone(this);
-            }
+            return _runningTaskWithDone;
         }
 
         /// <summary>
@@ -138,7 +126,8 @@ namespace Job.Scheduler.Job.Runner
                         return;
                     }
 
-                    await StopAsync(default);
+                    _cancellationTokenSource.Cancel();
+                    _stopwatch.Stop();
                 }
                 catch (System.Exception failureException)
                 {
@@ -147,10 +136,14 @@ namespace Job.Scheduler.Job.Runner
             }
         }
 
+        /// <summary>
+        /// Dispose runner
+        /// </summary>
         public void Dispose()
         {
             _cancellationTokenSource.Dispose();
             _runningTask.Dispose();
+            _runningTaskWithDone.Dispose();
         }
     }
 }

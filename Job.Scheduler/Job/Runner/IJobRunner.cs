@@ -20,6 +20,11 @@ namespace Job.Scheduler.Job.Runner
         bool IsRunning { get; }
 
         /// <summary>
+        /// For how long is the job running
+        /// </summary>
+        TimeSpan Elapsed { get; }
+
+        /// <summary>
         /// Run the job
         /// </summary>
         /// <param name="token">Optional token to sync with it</param>
@@ -30,8 +35,8 @@ namespace Job.Scheduler.Job.Runner
         /// Stop the task and wait for it to terminate
         /// </summary>
         /// <returns></returns>
-        public Task StopAsync(CancellationToken token);
-        
+        public Task<TimeSpan> StopAsync(CancellationToken token);
+
         /// <summary>
         /// Wait for the task to end
         /// </summary>
