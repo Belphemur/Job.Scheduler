@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace Job.Scheduler.Builder
     public class JobRunnerBuilder : IJobRunnerBuilder
     {
         private readonly Dictionary<Type, Type> _jobTypeToRunnerTypeDictionary;
-        private readonly Dictionary<Type, Type> _jobToRunner = new Dictionary<Type, Type>();
+        private readonly ConcurrentDictionary<Type, Type> _jobToRunner = new();
 
         public JobRunnerBuilder()
         {
@@ -31,7 +32,7 @@ namespace Job.Scheduler.Builder
             {
                 var typeOfJob = mainTypeJob.GetInterfaces().Intersect(_jobTypeToRunnerTypeDictionary.Keys).First();
                 runner = _jobTypeToRunnerTypeDictionary[typeOfJob];
-                _jobToRunner.Add(mainTypeJob, runner);
+                _jobToRunner.TryAdd(mainTypeJob, runner);
             }
 
             return (IJobRunner) Activator.CreateInstance(runner, job, jobDone);
