@@ -21,6 +21,8 @@ namespace Job.Scheduler.Job
 
         /// <summary>
         /// Define the max runtime of a job before it's considered to have failed.
+        ///
+        /// Set to NULL if no maximum
         /// </summary>
         public TimeSpan? MaxRuntime { get; }
 

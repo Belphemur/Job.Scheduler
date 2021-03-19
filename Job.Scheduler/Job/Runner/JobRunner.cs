@@ -7,7 +7,11 @@ using Job.Scheduler.Utils;
 
 namespace Job.Scheduler.Job.Runner
 {
-    internal abstract class JobRunner<T> : IJobRunner where T : IJob
+    /// <summary>
+    /// Base implementation of <see cref="IJobRunner"/>
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public abstract class JobRunner<T> : IJobRunner where T : IJob
     {
         private readonly T _job;
         private CancellationTokenSource _cancellationTokenSource;
@@ -68,6 +72,11 @@ namespace Job.Scheduler.Job.Runner
 
             _cancellationTokenSource.Cancel();
             await Task.WhenAny(TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(-1), token), _runningTask);
+        }
+
+        Task IJobRunner.WaitForJob()
+        {
+            return _runningTask;
         }
 
         /// <summary>

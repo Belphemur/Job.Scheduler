@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Job.Scheduler.Job;
 using Job.Scheduler.Job.Data;
+using Job.Scheduler.Job.Runner;
 
 namespace Job.Scheduler.Scheduler
 {
@@ -31,5 +32,12 @@ namespace Job.Scheduler.Scheduler
         /// Is the job present in the scheduler
         /// </summary>
         bool HasJob(JobId jobId);
+
+        /// <summary>
+        /// Used for test to be able to get the <see cref="IJobRunner"/>
+        /// </summary>
+        /// <param name="jobId"></param>
+        /// <returns></returns>
+        internal IJobRunner GetJobRunner(JobId jobId);
     }
 }

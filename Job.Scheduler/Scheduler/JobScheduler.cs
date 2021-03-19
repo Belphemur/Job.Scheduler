@@ -64,6 +64,12 @@ namespace Job.Scheduler.Scheduler
         /// </summary>
         public bool HasJob(JobId jobId) => _jobs.TryGetValue(jobId.UniqueId, out _);
 
+        IJobRunner IJobScheduler.GetJobRunner(JobId jobId)
+        {
+            _jobs.TryGetValue(jobId.UniqueId, out var jobRunner);
+            return jobRunner;
+        }
+
         /// <summary>
         /// Stop the task and wait for it to terminate.
         /// Use the token to stop the task earlier

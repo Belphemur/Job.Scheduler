@@ -18,6 +18,7 @@ namespace Job.Scheduler.Tests
             public bool HasRun { get; private set; }
 
             public IRetryAction FailRule { get; } = new NoRetry();
+            public TimeSpan? MaxRuntime { get; }
 
             public Task ExecuteAsync(CancellationToken cancellationToken)
             {
@@ -37,6 +38,7 @@ namespace Job.Scheduler.Tests
             public int Ran { get; private set; }
 
             public IRetryAction FailRule { get; } = new RetryNTimes(3);
+            public TimeSpan? MaxRuntime { get; }
 
             public Task ExecuteAsync(CancellationToken cancellationToken)
             {
@@ -65,7 +67,8 @@ namespace Job.Scheduler.Tests
         {
             var job = new OnTimeJob();
             var jobId = _scheduler.ScheduleJob(job);
-            await _scheduler.StopAsync();
+            var jobRunner = _scheduler.GetJobRunner(jobId);
+            await jobRunner.WaitForJob();
             job.HasRun.Should().BeTrue();
             _scheduler.HasJob(jobId).Should().BeFalse();
         }
@@ -75,9 +78,9 @@ namespace Job.Scheduler.Tests
         public async Task RecurringJobShouldRetry()
         {
             var job = new RecurringJobRetry();
-            _scheduler.ScheduleJob(job);
-            await Task.Delay(TimeSpan.FromMilliseconds(100));
-            await _scheduler.StopAsync();
+            var jobId = _scheduler.ScheduleJob(job);
+            var jobRunner = _scheduler.GetJobRunner(jobId);
+            await jobRunner.WaitForJob();
             job.Ran.Should().Be(4);
         }
     }

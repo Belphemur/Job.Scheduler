@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace Job.Scheduler.Job.Runner
 {
+    /// <summary>
+    /// Used to run the job
+    /// </summary>
     public interface IJobRunner : IDisposable
     {
         /// <summary>
@@ -28,5 +31,11 @@ namespace Job.Scheduler.Job.Runner
         /// </summary>
         /// <returns></returns>
         public Task StopAsync(CancellationToken token);
+        
+        /// <summary>
+        /// Wait for the task to end
+        /// </summary>
+        /// <returns></returns>
+        internal Task WaitForJob();
     }
 }
