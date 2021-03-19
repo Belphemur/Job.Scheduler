@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Job.Scheduler.Job.Action;
 using Job.Scheduler.Job.Exception;
 using Job.Scheduler.Utils;
 
@@ -13,7 +12,6 @@ namespace Job.Scheduler.Job.Runner
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
         private int _retries = 0;
-        private IRetryAction? _lastRetry;
 
         /// <summary>
         /// Unique ID of the job runner
@@ -102,16 +100,20 @@ namespace Job.Scheduler.Job.Runner
             {
                 try
                 {
-                    _lastRetry = await job.OnFailure(new JobException("Job Failed", e), _lastRetry);
-                    if (_lastRetry.ShouldRetry(_retries++))
+                    var retry = await job.OnFailure(new JobException("Job Failed", e));
+                    if (retry.ShouldRetry(_retries++))
                     {
-                        if (_lastRetry.DelayBetweenRetries.HasValue)
+                        if (retry.DelayBetweenRetries.HasValue)
                         {
-                            await TaskUtils.WaitForDelayOrCancellation(_lastRetry.DelayBetweenRetries.Value, token);
+                            await TaskUtils.WaitForDelayOrCancellation(retry.DelayBetweenRetries.Value, token);
                         }
 
                         await ExecuteJob(job, token);
+                        return;
                     }
+                    
+                    _cancellationTokenSource.Cancel();
+
                 }
                 catch (System.Exception failureException)
                 {
@@ -122,8 +124,8 @@ namespace Job.Scheduler.Job.Runner
 
         public void Dispose()
         {
-            _cancellationTokenSource?.Dispose();
-            _runningTask?.Dispose();
+            _cancellationTokenSource.Dispose();
+            _runningTask.Dispose();
         }
     }
 }

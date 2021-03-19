@@ -23,7 +23,7 @@ namespace Job.Scheduler.Tests
                 return Task.CompletedTask;
             }
 
-            public Task<IRetryAction> OnFailure(JobException exception, IRetryAction? previousRetry)
+            public Task<IRetryAction> OnFailure(JobException exception)
             {
                 return Task.FromResult<IRetryAction>(new AlwaysRetry());
             }
@@ -31,23 +31,16 @@ namespace Job.Scheduler.Tests
 
         public class RecurringJobRetry : IRecurringJob
         {
-            public bool HasRun { get; private set; }
 
-            public int Retry { get; private set; } = 0;
+            public int Ran { get; private set; }
 
-            public async Task ExecuteAsync(CancellationToken cancellationToken)
+            public Task ExecuteAsync(CancellationToken cancellationToken)
             {
-                Retry++;
-                await Console.Out.WriteLineAsync($"Has run {Retry}");
-                if (Retry < 4)
-                {
-                    throw new Exception("Test");
-                }
-
-                HasRun = true;
+                Ran++;
+                throw new Exception("Test");
             }
 
-            public Task<IRetryAction> OnFailure(JobException exception, IRetryAction? previousRetry)
+            public Task<IRetryAction> OnFailure(JobException exception)
             {
                 return Task.FromResult<IRetryAction>(new RetryNTimes(3));
             }
@@ -81,8 +74,7 @@ namespace Job.Scheduler.Tests
             _scheduler.ScheduleJob(job);
             await Task.Delay(TimeSpan.FromMilliseconds(100));
             await _scheduler.StopAsync();
-            job.HasRun.Should().BeFalse();
-            job.Retry.Should().Be(3);
+            job.Ran.Should().Be(4);
         }
     }
 }

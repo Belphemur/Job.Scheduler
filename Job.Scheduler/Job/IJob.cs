@@ -19,9 +19,8 @@ namespace Job.Scheduler.Job
         /// What to do on failure
         /// </summary>
         /// <param name="exception"></param>
-        /// <param name="previousRetry">the previous retry if this has been already retried</param>
         /// <returns>What action to take now, doesn't have to be the one that was taken before.</returns>
-        Task<IRetryAction> OnFailure(JobException exception, IRetryAction? previousRetry);
+        Task<IRetryAction> OnFailure(JobException exception);
     }
 
     /// <summary>
