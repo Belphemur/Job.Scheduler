@@ -19,7 +19,7 @@ namespace Job.Scheduler.Job.Runner
                 return;
             }
 
-            await ExecuteJob(job, token);
+            await InnerExecuteJob(job, token);
         }
     }
 }

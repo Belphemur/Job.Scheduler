@@ -8,7 +8,7 @@ namespace Job.Scheduler.Job.Runner
     {
         protected override Task StartJobAsync(IJob job, CancellationToken token)
         {
-            return ExecuteJob(job, token);
+            return InnerExecuteJob(job, token);
         }
 
         public OneTimeJobRunner(IJob job, Func<IJobRunner, Task> jobDone) : base(job, jobDone)

@@ -92,7 +92,7 @@ namespace Job.Scheduler.Job.Runner
         /// <param name="token"></param>
         /// <returns>true if the job should still be running, false if it shouldn't</returns>
         /// <exception cref="JobException"></exception>
-        protected async Task ExecuteJob(IJob job, CancellationToken token)
+        protected async Task InnerExecuteJob(IJob job, CancellationToken token)
         {
             try
             {
@@ -116,7 +116,7 @@ namespace Job.Scheduler.Job.Runner
                             return;
                         }
 
-                        await ExecuteJob(job, token);
+                        await InnerExecuteJob(job, token);
                         return;
                     }
 
