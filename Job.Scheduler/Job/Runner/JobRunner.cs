@@ -23,17 +23,17 @@ namespace Job.Scheduler.Job.Runner
         /// <summary>
         /// Run when the job is Done
         /// </summary>
-        public Func<IJobRunner, Task> JobDone { get; }
+        private readonly Func<IJobRunner, Task> _jobDone;
 
         /// <summary>
         /// Is the job still running
         /// </summary>
         public bool IsRunning => _cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested;
 
-        public JobRunner(T job, Func<IJobRunner, Task> jobDone)
+        protected JobRunner(T job, Func<IJobRunner, Task> jobDone)
         {
             _job = job;
-            JobDone = jobDone;
+            _jobDone = jobDone;
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Job.Scheduler.Job.Runner
             }
             finally
             {
-                await JobDone(this);
+                await _jobDone(this);
             }
         }
 
@@ -111,11 +111,16 @@ namespace Job.Scheduler.Job.Runner
                             await TaskUtils.WaitForDelayOrCancellation(retry.DelayBetweenRetries.Value, token);
                         }
 
+                        if (token.IsCancellationRequested)
+                        {
+                            return;
+                        }
+
                         await ExecuteJob(job, token);
                         return;
                     }
-                    
-                    _cancellationTokenSource.Cancel();
+
+                    await StopAsync(default);
 
                 }
                 catch (System.Exception failureException)
