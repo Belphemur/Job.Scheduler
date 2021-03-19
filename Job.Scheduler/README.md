@@ -1,20 +1,30 @@
 ﻿# Job Scheduler
+
 [![.NET JobScheduler](https://github.com/Belphemur/Spotitoast/actions/workflows/dotnet-jobscheduler.yml/badge.svg)](https://github.com/Belphemur/Spotitoast/actions/workflows/dotnet-jobscheduler.yml)
 
 A simple job scheduling library relying on the async/await pattern in C#.
 
 ## Type of Jobs
+
 ### One Time Job
-By implementing the `IJob` interface you tell the scheduler that you just want this job to be executed once and directly upon being scheduled.
+
+By implementing the `IJob` interface you tell the scheduler that you just want this job to be executed once and directly
+upon being scheduled.
+
 ### Recurring Job
+
 By implementing the `IRecurringJob` the scheduler will run indefinitely your job with the given delay between execution.
+
 ### Delayed Job
+
 By implementing the `IDelayedJob` you tell the scheduler to wait a delay before executing your job.
 
 ## Usage
-I advise you to use a Dependency Injection (DI) engine (like SimpleInjector) to register the `JobRunnerBuilder` and `JobScheduler` as singleton.
-  
+
+I advise you to use a Dependency Injection (DI) engine (like SimpleInjector) to register the `JobRunnerBuilder`and `JobScheduler` as singleton.
+
 ### Example:
+
 ```c#
 public class MyJob : IRecurringJob
 {
@@ -22,6 +32,12 @@ public class MyJob : IRecurringJob
     //to retry the job 3 times
     //Works for any type of job
     public IRetryAction FailRule { get; } = new RetryNTimes(3);
+   
+    //Optional MaxRuntime for the job before its canncellationToke get cancelled
+    //Keep in mind, this only cancel the token, we have no clean way of stopping a running task
+    //then cancelling the token.
+    public TimeSpan? MaxRuntime { get; } = TimeSpan.FromSeconds(5);
+
 
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
