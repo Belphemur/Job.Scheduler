@@ -28,6 +28,7 @@ namespace Job.Scheduler.Job
         /// <param name="exception"></param>
         /// <returns>What action to take now, doesn't have to be the one that was taken before.</returns>
         Task OnFailure(JobException exception);
+        
     }
 
     /// <summary>
