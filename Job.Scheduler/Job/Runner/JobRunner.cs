@@ -18,7 +18,6 @@ namespace Job.Scheduler.Job.Runner
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
         private Task _runningTaskWithDone;
-        private int _retries = 0;
         private static readonly IRetryAction DefaultFailRule = new NoRetry();
         private readonly Stopwatch _stopwatch = new();
         private readonly Func<IJobRunner, Task> _jobDone;
@@ -26,6 +25,7 @@ namespace Job.Scheduler.Job.Runner
         public Guid UniqueId { get; } = Guid.NewGuid();
         public bool IsRunning => _cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested;
         public TimeSpan Elapsed => _stopwatch.Elapsed;
+        public int Retries { get; private set; }
 
         protected JobRunner(T job, Func<IJobRunner, Task> jobDone)
         {
@@ -110,8 +110,9 @@ namespace Job.Scheduler.Job.Runner
 
                     await job.OnFailure(jobException);
                     var retry = job.FailRule ?? DefaultFailRule;
-                    if (retry.ShouldRetry(_retries++))
+                    if (retry.ShouldRetry(Retries))
                     {
+                        Retries++;
                         if (retry.DelayBetweenRetries.HasValue)
                         {
                             await TaskUtils.WaitForDelayOrCancellation(retry.DelayBetweenRetries.Value, cancellationToken);

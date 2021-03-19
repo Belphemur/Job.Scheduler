@@ -8,7 +8,7 @@ using Job.Scheduler.Job.Exception;
 namespace Job.Scheduler.Tests.Mocks
 {
 
-    public class RecurringJobRetry : IRecurringJob
+    public class FailingRetringJob : IJob
     {
 
         public int Ran { get; private set; }

@@ -9,8 +9,13 @@ namespace Job.Scheduler.Tests.Mocks
 {
     public class MaxRuntimeJob : IJob
     {
-        public IRetryAction FailRule { get; } = new NoRetry();
-        public TimeSpan? MaxRuntime { get; } = TimeSpan.FromSeconds(1);
+        public IRetryAction FailRule { get; }
+        public TimeSpan? MaxRuntime { get; } = TimeSpan.FromMilliseconds(100);
+
+        public MaxRuntimeJob(IRetryAction failRule)
+        {
+            FailRule = failRule;
+        }
 
         public async Task ExecuteAsync(CancellationToken cancellationToken)
         {

@@ -25,6 +25,11 @@ namespace Job.Scheduler.Job.Runner
         TimeSpan Elapsed { get; }
 
         /// <summary>
+        /// Number of time the job has been retried
+        /// </summary>
+        int Retries { get; }
+
+        /// <summary>
         /// Run the job
         /// </summary>
         /// <param name="token">Optional token to sync with it</param>
