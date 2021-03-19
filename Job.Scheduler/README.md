@@ -1,4 +1,4 @@
-﻿# Job Scheduler
+﻿# Job Scheduler [![.NET](https://github.com/Belphemur/Spotitoast/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Belphemur/Spotitoast/actions/workflows/dotnet.yml)
 A simple job scheduling library relying on the async/await pattern in C#.
 
 ## Type of Jobs
