@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Job.Scheduler.Job.Action;
 using Job.Scheduler.Job.Exception;
 using Job.Scheduler.Utils;
 
@@ -12,6 +13,7 @@ namespace Job.Scheduler.Job.Runner
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
         private int _retries = 0;
+        private static readonly NoRetry DefaultFailRule = new NoRetry();
 
         /// <summary>
         /// Unique ID of the job runner
@@ -100,7 +102,8 @@ namespace Job.Scheduler.Job.Runner
             {
                 try
                 {
-                    var retry = await job.OnFailure(new JobException("Job Failed", e));
+                    await job.OnFailure(new JobException("Job Failed", e));
+                    var retry = job.FailRule ?? DefaultFailRule;
                     if (retry.ShouldRetry(_retries++))
                     {
                         if (retry.DelayBetweenRetries.HasValue)

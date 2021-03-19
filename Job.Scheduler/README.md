@@ -16,21 +16,24 @@ I advise you to use a Dependency Injection (DI) engine (like SimpleInjector) to 
 ```c#
 public class MyJob : IRecurringJob
 {
+    //Set the retry rule in case of failure of the job, in this case we want
+    //to retry the job 3 times
+    //Works for any type of job
+    public IRetryAction FailRule { get; } = new RetryNTimes(3);
+
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         //Your complex recurring code, here pretty simple
         await Console.Out.WriteLineAsync("Hello World");
     }
 
-    public Task<bool> OnFailure(JobException exception)
+    public Task<IRetryAction> OnFailure(JobException exception)
     {
 //Any exception that occured when executing your job will be wrapped in a JobException, check the InnerException
 //for you to be able to handle a failure without breaking your application neither needed a try/catch in ExecuteAsync
 
-//Continue to run if the job has failed
-//You can handle your self what to do in case of failure
-//Returning false, will make the job stop
-        return Task.FromResult(true);
+
+        return Task.CompletedTask;
     }
 //This job will run every 15 seconds
 

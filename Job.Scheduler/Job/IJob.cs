@@ -9,6 +9,13 @@ namespace Job.Scheduler.Job
     public interface IJob
     {
         /// <summary>
+        /// What to do if the job fails
+        /// <see cref="AlwaysRetry"/>, <see cref="NoRetry"/> or <see cref="RetryNTimes"/>.
+        ///
+        /// If null, it's considered to be <see cref="NoRetry"/>
+        /// </summary>
+        public IRetryAction FailRule { get; }
+        /// <summary>
         /// Execute the job
         /// </summary>
         /// <param name="cancellationToken"></param>
@@ -20,7 +27,7 @@ namespace Job.Scheduler.Job
         /// </summary>
         /// <param name="exception"></param>
         /// <returns>What action to take now, doesn't have to be the one that was taken before.</returns>
-        Task<IRetryAction> OnFailure(JobException exception);
+        Task OnFailure(JobException exception);
     }
 
     /// <summary>

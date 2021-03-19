@@ -17,13 +17,15 @@ namespace Job.Scheduler.Tests
         {
             public bool HasRun { get; private set; }
 
+            public IRetryAction FailRule { get; } = new NoRetry();
+
             public Task ExecuteAsync(CancellationToken cancellationToken)
             {
                 HasRun = true;
                 return Task.CompletedTask;
             }
 
-            public Task<IRetryAction> OnFailure(JobException exception)
+            public Task OnFailure(JobException exception)
             {
                 return Task.FromResult<IRetryAction>(new AlwaysRetry());
             }
@@ -34,15 +36,17 @@ namespace Job.Scheduler.Tests
 
             public int Ran { get; private set; }
 
+            public IRetryAction FailRule { get; } = new RetryNTimes(3);
+
             public Task ExecuteAsync(CancellationToken cancellationToken)
             {
                 Ran++;
                 throw new Exception("Test");
             }
 
-            public Task<IRetryAction> OnFailure(JobException exception)
+            public Task OnFailure(JobException exception)
             {
-                return Task.FromResult<IRetryAction>(new RetryNTimes(3));
+                return Task.CompletedTask;
             }
 
             public TimeSpan Delay { get; } = TimeSpan.FromMilliseconds(10);
