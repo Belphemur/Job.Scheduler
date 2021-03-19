@@ -89,39 +89,47 @@ namespace Job.Scheduler.Job.Runner
         /// Execute the job
         /// </summary>
         /// <param name="job"></param>
-        /// <param name="token"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns>true if the job should still be running, false if it shouldn't</returns>
         /// <exception cref="JobException"></exception>
-        protected async Task InnerExecuteJob(IJob job, CancellationToken token)
+        protected async Task InnerExecuteJob(IJob job, CancellationToken cancellationToken)
         {
+            using var maxRuntimeCts = _job.MaxRuntime.HasValue ? new CancellationTokenSource(_job.MaxRuntime.Value) : new CancellationTokenSource();
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, maxRuntimeCts.Token);
+            var runtimeMaxLinkedToken = linkedCts.Token;
             try
             {
-                await job.ExecuteAsync(token);
+                await job.ExecuteAsync(runtimeMaxLinkedToken);
             }
             catch (System.Exception e)
             {
                 try
                 {
-                    await job.OnFailure(new JobException("Job Failed", e));
+                    var jobException = new JobException("Job Failed", e);
+                    if (e is OperationCanceledException && maxRuntimeCts.IsCancellationRequested)
+                    {
+                        jobException = new MaxRuntimeJobException("Job reached max runtime", e);
+                    }
+
+                    await job.OnFailure(jobException);
                     var retry = job.FailRule ?? DefaultFailRule;
                     if (retry.ShouldRetry(_retries++))
                     {
                         if (retry.DelayBetweenRetries.HasValue)
                         {
-                            await TaskUtils.WaitForDelayOrCancellation(retry.DelayBetweenRetries.Value, token);
+                            await TaskUtils.WaitForDelayOrCancellation(retry.DelayBetweenRetries.Value, cancellationToken);
                         }
 
-                        if (token.IsCancellationRequested)
+                        if (cancellationToken.IsCancellationRequested)
                         {
                             return;
                         }
 
-                        await InnerExecuteJob(job, token);
+                        await InnerExecuteJob(job, cancellationToken);
                         return;
                     }
 
                     await StopAsync(default);
-
                 }
                 catch (System.Exception failureException)
                 {

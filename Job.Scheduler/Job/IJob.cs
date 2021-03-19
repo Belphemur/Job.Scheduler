@@ -6,6 +6,9 @@ using Job.Scheduler.Job.Exception;
 
 namespace Job.Scheduler.Job
 {
+    /// <summary>
+    /// Interface to implement to define your job
+    /// </summary>
     public interface IJob
     {
         /// <summary>
@@ -15,6 +18,12 @@ namespace Job.Scheduler.Job
         /// If null, it's considered to be <see cref="NoRetry"/>
         /// </summary>
         public IRetryAction FailRule { get; }
+
+        /// <summary>
+        /// Define the max runtime of a job before it's considered to have failed.
+        /// </summary>
+        public TimeSpan? MaxRuntime { get; }
+
         /// <summary>
         /// Execute the job
         /// </summary>
