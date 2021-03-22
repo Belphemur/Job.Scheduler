@@ -58,10 +58,10 @@ namespace Job.Scheduler.Tests
         [Test]
         public async Task MaxRuntimeIsRespectedAndTaskRetried()
         {
-            var job = new MaxRuntimeJob(new RetryNTimes(2));
+            var job = new MaxRuntimeJob(new NoRetry());
             var jobRunner = _scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
-            jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value * 3);
+            jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value);
         }
     }
 }
