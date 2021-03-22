@@ -10,7 +10,7 @@ namespace Job.Scheduler.Tests.Mocks
     public class MaxRuntimeJob : IJob
     {
         public IRetryAction FailRule { get; }
-        public TimeSpan? MaxRuntime { get; } = TimeSpan.FromMilliseconds(100);
+        public TimeSpan? MaxRuntime { get; } = TimeSpan.FromMilliseconds(50);
 
         public MaxRuntimeJob(IRetryAction failRule)
         {
@@ -21,7 +21,7 @@ namespace Job.Scheduler.Tests.Mocks
         {
             while (true)
             {
-                await Task.Delay(10, cancellationToken);
+                await Task.Delay(1, cancellationToken);
             }
         }
 
