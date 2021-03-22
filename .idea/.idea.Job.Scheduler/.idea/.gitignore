@@ -1,0 +1,13 @@
+﻿# Default ignored files
+/shelf/
+/workspace.xml
+# Rider ignored files
+/modules.xml
+/projectSettingsUpdater.xml
+/contentModel.xml
+/.idea.Job.Scheduler.iml
+# Datasource local storage ignored files
+/../../../../../../../../../:\Users\Antoine\source\repos\Job.Scheduler\.idea\.idea.Job.Scheduler\.idea/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/
