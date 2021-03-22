@@ -49,9 +49,6 @@ namespace Job.Scheduler.Job.Runner
             {
                 throw new InvalidOperationException("Can't start a running job");
             }
-
-            _stopwatch.Start();
-
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
             _runningTask = StartJobAsync(_job, _cancellationTokenSource.Token);
@@ -73,7 +70,6 @@ namespace Job.Scheduler.Job.Runner
 
             _cancellationTokenSource.Cancel();
             await Task.WhenAny(TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(-1), token), _runningTaskWithDone);
-            _stopwatch.Stop();
             return _stopwatch.Elapsed;
         }
 
@@ -94,6 +90,7 @@ namespace Job.Scheduler.Job.Runner
             using var maxRuntimeCts = _job.MaxRuntime.HasValue ? new CancellationTokenSource(_job.MaxRuntime.Value) : new CancellationTokenSource();
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, maxRuntimeCts.Token);
             var runtimeMaxLinkedToken = linkedCts.Token;
+            _stopwatch.Restart();
             try
             {
                 await job.ExecuteAsync(runtimeMaxLinkedToken);
@@ -128,11 +125,14 @@ namespace Job.Scheduler.Job.Runner
                     }
 
                     _cancellationTokenSource.Cancel();
-                    _stopwatch.Stop();
                 }
                 catch (System.Exception failureException)
                 {
                     throw new JobException("Fail to handle failure of job", failureException);
+                }
+                finally
+                {
+                    _stopwatch.Stop();
                 }
             }
         }
