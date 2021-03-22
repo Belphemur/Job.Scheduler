@@ -18,7 +18,7 @@
         {
           "assets": [
             {
-              "path": "nuget/*.nupkg"
+              "path": "nupkg/*.nupkg"
             }
           ]
         }
