@@ -75,7 +75,7 @@ namespace Job.Scheduler.Job.Runner
 
         Task IJobRunner.WaitForJob()
         {
-            return _runningTaskWithDone;
+            return _runningTask;
         }
 
         /// <summary>
