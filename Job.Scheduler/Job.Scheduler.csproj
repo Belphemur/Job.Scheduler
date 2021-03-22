@@ -13,7 +13,6 @@
         <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/Belphemur/Spotitoast/tree/master/Job.Scheduler</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Belphemur/Spotitoast</RepositoryUrl>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
