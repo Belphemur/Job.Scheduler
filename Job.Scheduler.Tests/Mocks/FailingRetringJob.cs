@@ -13,8 +13,13 @@ namespace Job.Scheduler.Tests.Mocks
 
         public int Ran { get; private set; }
 
-        public IRetryAction FailRule { get; } = new RetryNTimes(3);
+        public IRetryAction FailRule { get; }
         public TimeSpan? MaxRuntime { get; }
+
+        public FailingRetringJob(IRetryAction failRule)
+        {
+            FailRule = failRule;
+        }
 
         public Task ExecuteAsync(CancellationToken cancellationToken)
         {
