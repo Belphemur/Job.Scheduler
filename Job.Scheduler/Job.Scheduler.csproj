@@ -17,5 +17,8 @@
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="5.0.1" />
+    </ItemGroup>
 
 </Project>
