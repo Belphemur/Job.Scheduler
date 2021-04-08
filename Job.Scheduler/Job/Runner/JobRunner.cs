@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ namespace Job.Scheduler.Job.Runner
         private static readonly IRetryAction DefaultFailRule = new NoRetry();
         private readonly Stopwatch _stopwatch = new();
         private readonly Func<IJobRunner, Task> _jobDone;
+        private static ActivitySource _activitySource = new("Job.Scheduler::Runner");
 
         public Guid UniqueId { get; } = Guid.NewGuid();
         public bool IsRunning => _cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested;
@@ -49,6 +51,7 @@ namespace Job.Scheduler.Job.Runner
             {
                 throw new InvalidOperationException("Can't start a running job");
             }
+
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
             _runningTask = StartJobAsync(_job, _cancellationTokenSource.Token);
@@ -91,9 +94,15 @@ namespace Job.Scheduler.Job.Runner
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, maxRuntimeCts.Token);
             var runtimeMaxLinkedToken = linkedCts.Token;
             _stopwatch.Restart();
+            using var activity = _activitySource.StartActivity("Running Job", ActivityKind.Internal, null, new[]
+            {
+                new KeyValuePair<string, object>("JobClass", job.GetType().Name),
+                new KeyValuePair<string, object>("Retries", Retries)
+            });
             try
             {
                 await job.ExecuteAsync(runtimeMaxLinkedToken);
+                Retries = 0;
             }
             catch (System.Exception e)
             {
@@ -106,13 +115,13 @@ namespace Job.Scheduler.Job.Runner
                     }
 
                     await job.OnFailure(jobException);
-                    var retry = job.FailRule ?? DefaultFailRule;
-                    if (retry.ShouldRetry(Retries))
+                    var retryRule = job.FailRule ?? DefaultFailRule;
+                    if (retryRule.ShouldRetry(Retries))
                     {
                         Retries++;
-                        if (retry.DelayBetweenRetries.HasValue)
+                        if (retryRule.DelayBetweenRetries.HasValue)
                         {
-                            await TaskUtils.WaitForDelayOrCancellation(retry.DelayBetweenRetries.Value, cancellationToken);
+                            await TaskUtils.WaitForDelayOrCancellation(retryRule.DelayBetweenRetries.Value, cancellationToken);
                         }
 
                         if (cancellationToken.IsCancellationRequested)

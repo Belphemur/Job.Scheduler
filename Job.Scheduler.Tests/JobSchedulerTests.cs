@@ -40,11 +40,12 @@ namespace Job.Scheduler.Tests
         [Test]
         public async Task FailingJobShouldRetry()
         {
-            var job = new FailingRetringJob();
+            var maxRetries = 3;
+            var job = new FailingRetringJob(new RetryNTimes(maxRetries));
             var jobRunner = _scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             job.Ran.Should().Be(4);
-            jobRunner.Retries.Should().Be(3);
+            jobRunner.Retries.Should().Be(maxRetries);
         }
 
         [Test]
@@ -59,10 +60,12 @@ namespace Job.Scheduler.Tests
         [Test]
         public async Task MaxRuntimeIsRespectedAndTaskRetried()
         {
-            var job = new MaxRuntimeJob(new RetryNTimes(2));
+            var maxRetries = 2;
+            var job = new MaxRuntimeJob(new RetryNTimes(maxRetries));
             var jobRunner = _scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value, TimeSpan.FromMilliseconds(20));
+            jobRunner.Retries.Should().Be(maxRetries);
         }
     }
 }
