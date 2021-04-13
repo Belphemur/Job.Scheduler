@@ -55,13 +55,13 @@ jobs:
         if: ${{ always() }}
       - name: Pack
         if: matrix.os == 'ubuntu-latest'
-        run: dotnet pack -v normal -c Release --no-restore --include-symbols --include-source -p:PackageVersion=$GITHUB_RUN_ID $PROJECT_NAME/$PROJECT_NAME.*proj    
+        run: dotnet pack -v normal -c Release --no-restore --include-symbols --include-source  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion=$GITHUB_RUN_ID $PROJECT_NAME/$PROJECT_NAME.*proj    
       - name: Upload Artifact
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v2
         with:
           name: nupkg
-          path: ${{ env.PROJECT_NAME }}/bin/Release/*.nupkg
+          path: ${{ env.PROJECT_NAME }}/bin/Release/*.*nupkg
   prerelease:
     needs: build
     if: github.ref == 'refs/heads/develop'
@@ -73,7 +73,7 @@ jobs:
           name: nupkg
       - name: Push to GitHub Feed
         run: |
-          for f in ./nupkg/*.nupkg
+          for f in ./nupkg/*.*nupkg
           do
             curl -vX PUT -u "$GITHUB_USER:$GITHUB_TOKEN" -F package=@$f $GITHUB_FEED
           done
