@@ -8,7 +8,7 @@
       [
         "@semantic-release/exec",
         {
-          "prepareCmd": "dotnet pack -v normal -c Release --include-symbols --include-source -p:PackageVersion=${nextRelease.version} -o nupkg ${process.env.PROJECT_NAME}/${process.env.PROJECT_NAME}.*proj",
+          "prepareCmd": "dotnet pack -v normal -c Release --include-symbols --include-source -o nupkg -p:PackageVersion=${nextRelease.version} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg ${process.env.PROJECT_NAME}/${process.env.PROJECT_NAME}.*proj",
           "publishCmd": "dotnet nuget push nupkg/*.nupkg --source ${process.env.NUGET_FEED} --skip-duplicate --api-key ${process.env.NUGET_KEY}"
         }
       ],
@@ -18,7 +18,7 @@
         {
           "assets": [
             {
-              "path": "nupkg/*.nupkg"
+              "path": "nupkg/*.*nupkg"
             }
           ]
         }
