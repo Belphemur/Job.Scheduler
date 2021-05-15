@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.1.1...v2.2.0) (2021-05-15)
+
+
+### Features
+
+* **AlwaysRetry:** Add configurable delay for always retry between each retry of the job ([4d6dde2](https://github.com/Belphemur/Job.Scheduler/commit/4d6dde2f8faacdada5318a42dd482b49dfd6eb7b))
+
 ## [2.1.1](https://github.com/Belphemur/Job.Scheduler/compare/v2.1.0...v2.1.1) (2021-04-13)
 
 
