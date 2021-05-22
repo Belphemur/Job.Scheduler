@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/Belphemur/Job.Scheduler/compare/v2.2.0...v2.2.1) (2021-05-22)
+
+
+### Bug Fixes
+
+* **Deadlock:** deadlock of task when job end ([b538f8d](https://github.com/Belphemur/Job.Scheduler/commit/b538f8d542e23b3a535e125125ed52bb5822efc7))
+
 # [2.2.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.1.1...v2.2.0) (2021-05-15)
 
 
