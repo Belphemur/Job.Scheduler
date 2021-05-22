@@ -53,17 +53,10 @@ namespace Job.Scheduler.Scheduler
 
         IJobRunner IJobScheduler.ScheduleJobInternal(IJob job, CancellationToken token)
         {
-            var runner = _jobRunnerBuilder.Build(job, async jobRunner =>
+            var runner = _jobRunnerBuilder.Build(job, jobRunner =>
             {
                 _jobs.Remove(jobRunner.UniqueId, out _);
-                try
-                {
-                    await jobRunner.StopAsync(default);
-                }
-                finally
-                {
-                    jobRunner.Dispose();
-                }
+                return Task.CompletedTask;
             });
             _jobs.TryAdd(runner.UniqueId, runner);
             runner.Start(token);
