@@ -25,7 +25,7 @@ namespace Job.Scheduler.Job.Runner
         private static ActivitySource _activitySource = new("Job.Scheduler::Runner");
 
         public Guid UniqueId { get; } = Guid.NewGuid();
-        public bool IsRunning => _cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested;
+        public bool IsRunning => _cancellationTokenSource is {IsCancellationRequested: false};
         public TimeSpan Elapsed => _stopwatch.Elapsed;
         public int Retries { get; private set; }
 
@@ -56,6 +56,8 @@ namespace Job.Scheduler.Job.Runner
 
             _runningTask = StartJobAsync(_job, _cancellationTokenSource.Token);
             _runningTaskWithDone = _runningTask.ContinueWith(task => _jobDone(this), CancellationToken.None);
+            //Dispose the runner when the task has finished
+            _runningTask.ContinueWith(_ => Dispose(), CancellationToken.None);
         }
 
 
@@ -73,6 +75,7 @@ namespace Job.Scheduler.Job.Runner
 
             _cancellationTokenSource.Cancel();
             await Task.WhenAny(TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(-1), token), _runningTaskWithDone);
+            _stopwatch.Stop();
             return _stopwatch.Elapsed;
         }
 
