@@ -1,3 +1,10 @@
+## [2.2.2](https://github.com/Belphemur/Job.Scheduler/compare/v2.2.1...v2.2.2) (2021-07-15)
+
+
+### Bug Fixes
+
+* **Disposing:** Dispose of task when possible ([1f31de5](https://github.com/Belphemur/Job.Scheduler/commit/1f31de5346903de90a366dbf182fc68f9c45bbd7))
+
 ## [2.2.1](https://github.com/Belphemur/Job.Scheduler/compare/v2.2.0...v2.2.1) (2021-05-22)
 
 
