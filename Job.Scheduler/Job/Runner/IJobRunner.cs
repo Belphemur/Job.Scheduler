@@ -7,7 +7,7 @@ namespace Job.Scheduler.Job.Runner
     /// <summary>
     /// Used to run the job
     /// </summary>
-    public interface IJobRunner : IDisposable
+    public interface IJobRunner
     {
         /// <summary>
         /// Unique ID of the job runner
