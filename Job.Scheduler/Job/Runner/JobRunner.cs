@@ -22,7 +22,7 @@ namespace Job.Scheduler.Job.Runner
         private static readonly IRetryAction DefaultFailRule = new NoRetry();
         private readonly Stopwatch _stopwatch = new();
         private readonly Func<IJobRunner, Task> _jobDone;
-        private static ActivitySource _activitySource = new("Job.Scheduler::Runner");
+        private static readonly ActivitySource _activitySource = new("Job.Scheduler::Runner");
 
         public Guid UniqueId { get; } = Guid.NewGuid();
         public bool IsRunning => _cancellationTokenSource is {IsCancellationRequested: false};
@@ -55,9 +55,12 @@ namespace Job.Scheduler.Job.Runner
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
             _runningTask = StartJobAsync(_job, _cancellationTokenSource.Token);
-            _runningTaskWithDone = _runningTask.ContinueWith(task => _jobDone(this), CancellationToken.None);
-            //Dispose the runner when the task has finished
-            _runningTask.ContinueWith(_ => Dispose(), CancellationToken.None);
+            _runningTaskWithDone = _runningTask.ContinueWith(task =>
+            {
+                 _jobDone(this);
+                 _runningTask.Dispose();
+                 _cancellationTokenSource.Dispose();
+            }, CancellationToken.None);
         }
 
 
@@ -147,16 +150,6 @@ namespace Job.Scheduler.Job.Runner
                     _stopwatch.Stop();
                 }
             }
-        }
-
-        /// <summary>
-        /// Dispose runner
-        /// </summary>
-        public void Dispose()
-        {
-            _cancellationTokenSource.Dispose();
-            _runningTask.Dispose();
-            _runningTaskWithDone.Dispose();
         }
     }
 }
