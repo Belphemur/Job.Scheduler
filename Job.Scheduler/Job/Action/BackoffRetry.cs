@@ -8,7 +8,7 @@ namespace Job.Scheduler.Job.Action
         private readonly Func<int, TimeSpan> _retryStrategy;
 
         /// <summary>
-        /// 
+        /// Implement your own backoff strategy like <see cref="ExponentialBackoffRetry"/>
         /// </summary>
         /// <param name="retryStrategy">Implement your own strategy for delay between retries based on the current retry</param>
         /// <param name="maxRetries">null to always retry</param>
