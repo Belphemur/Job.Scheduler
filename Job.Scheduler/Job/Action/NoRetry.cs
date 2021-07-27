@@ -7,11 +7,15 @@ namespace Job.Scheduler.Job.Action
     /// </summary>
     public class NoRetry : IRetryAction
     {
-        public TimeSpan? DelayBetweenRetries { get; }
 
         public bool ShouldRetry(int currentRetry)
         {
             return false;
+        }
+
+        public TimeSpan? GetDelayBetweenRetries(int currentRetry)
+        {
+            return null;
         }
     }
 }
