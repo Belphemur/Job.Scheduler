@@ -1,3 +1,11 @@
+# [2.3.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.2.2...v2.3.0) (2021-07-27)
+
+
+### Features
+
+* **BackoffRetry:** Add 2 different backoff retry using the new delay between retries ([0484803](https://github.com/Belphemur/Job.Scheduler/commit/0484803cf58a83cf046c5c8f135f56ea5785ec0b))
+* **Retry:** Let the user be able to define their own delay strategy between retries instead of a hardcoded value. ([c26802a](https://github.com/Belphemur/Job.Scheduler/commit/c26802a4b522df46259885060ec25345c721867e))
+
 ## [2.2.2](https://github.com/Belphemur/Job.Scheduler/compare/v2.2.1...v2.2.2) (2021-07-15)
 
 
