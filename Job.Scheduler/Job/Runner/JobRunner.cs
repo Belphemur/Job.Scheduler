@@ -57,9 +57,9 @@ namespace Job.Scheduler.Job.Runner
             _runningTask = StartJobAsync(_job, _cancellationTokenSource.Token);
             _runningTaskWithDone = _runningTask.ContinueWith(task =>
             {
-                 _jobDone(this);
-                 _runningTask.Dispose();
-                 _cancellationTokenSource.Dispose();
+                _jobDone(this);
+                _runningTask.Dispose();
+                _cancellationTokenSource.Dispose();
             }, CancellationToken.None);
         }
 
@@ -124,10 +124,12 @@ namespace Job.Scheduler.Job.Runner
                     var retryRule = job.FailRule ?? DefaultFailRule;
                     if (retryRule.ShouldRetry(Retries))
                     {
+                        var delay = retryRule.GetDelayBetweenRetries(Retries);
                         Retries++;
-                        if (retryRule.DelayBetweenRetries.HasValue)
+
+                        if (delay.HasValue)
                         {
-                            await TaskUtils.WaitForDelayOrCancellation(retryRule.DelayBetweenRetries.Value, cancellationToken);
+                            await TaskUtils.WaitForDelayOrCancellation(delay.Value, cancellationToken);
                         }
 
                         if (cancellationToken.IsCancellationRequested)
