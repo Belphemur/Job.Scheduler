@@ -51,7 +51,7 @@ namespace Job.Scheduler.Tests
         [Test]
         public async Task MaxRuntimeIsRespected()
         {
-            var job = new MaxRuntimeJob(new NoRetry());
+            var job = new MaxRuntimeJob(new NoRetry(), TimeSpan.FromMilliseconds(50));
             var jobRunner = _scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value, TimeSpan.FromMilliseconds(20));
@@ -61,7 +61,19 @@ namespace Job.Scheduler.Tests
         public async Task MaxRuntimeIsRespectedAndTaskRetried()
         {
             var maxRetries = 2;
-            var job = new MaxRuntimeJob(new RetryNTimes(maxRetries));
+            var job = new MaxRuntimeJob(new RetryNTimes(maxRetries), TimeSpan.FromMilliseconds(50));
+            var jobRunner = _scheduler.ScheduleJobInternal(job);
+            await jobRunner.WaitForJob();
+            jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value, TimeSpan.FromMilliseconds(20));
+            jobRunner.Retries.Should().Be(maxRetries);
+        }
+
+
+        [Test]
+        public async Task MaxRuntimeIsRespectedAndTaskRetriedWithBackoff()
+        {
+            var maxRetries = 3;
+            var job = new MaxRuntimeJob(new ExponentialBackoffRetry(TimeSpan.FromMilliseconds(10), maxRetries), TimeSpan.FromMilliseconds(80));
             var jobRunner = _scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value, TimeSpan.FromMilliseconds(20));
