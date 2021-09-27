@@ -58,7 +58,7 @@ namespace Job.Scheduler.Job.Runner
 
             _runningTask = Task.CompletedTask.ContinueWith(_ => StartJobAsync(_job, _cancellationTokenSource.Token), default, TaskContinuationOptions.RunContinuationsAsynchronously, _taskScheduler)
                 .Unwrap();
-            _runningTaskWithDone = _runningTask.ContinueWith(task =>
+            _runningTaskWithDone = _runningTask.ContinueWith(_ =>
             {
                 _jobDone(this);
                 _runningTask.Dispose();
