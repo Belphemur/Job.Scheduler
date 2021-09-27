@@ -8,6 +8,9 @@ using Job.Scheduler.Job.Runner;
 
 namespace Job.Scheduler.Builder
 {
+    /// <summary>
+    /// Take care of building the runner for different type of <see cref="IJob"/>
+    /// </summary>
     public class JobRunnerBuilder : IJobRunnerBuilder
     {
         private readonly Dictionary<Type, Type> _jobTypeToRunnerTypeDictionary;

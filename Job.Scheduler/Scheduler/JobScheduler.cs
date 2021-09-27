@@ -11,6 +11,9 @@ using Job.Scheduler.Job.Runner;
 
 namespace Job.Scheduler.Scheduler
 {
+    /// <summary>
+    /// Takes care of scheduling new <see cref="IJob"/> and managing them.
+    /// </summary>
     public class JobScheduler : IJobScheduler
     {
         private readonly ConcurrentDictionary<Guid, IJobRunner> _jobs = new ConcurrentDictionary<Guid, IJobRunner>();
