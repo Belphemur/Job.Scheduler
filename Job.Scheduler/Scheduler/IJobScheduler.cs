@@ -13,7 +13,8 @@ namespace Job.Scheduler.Scheduler
         /// </summary>
         /// <param name="job"></param>
         /// <param name="token"></param>
-        JobId ScheduleJob(IJob job, CancellationToken token = default);
+        /// <param name="taskScheduler"></param>
+        JobId ScheduleJob(IJob job, CancellationToken token = default, TaskScheduler taskScheduler = null);
 
         /// <summary>
         /// Stop asynchronously any running job
@@ -32,12 +33,13 @@ namespace Job.Scheduler.Scheduler
         /// Is the job present in the scheduler
         /// </summary>
         bool HasJob(JobId jobId);
-        
+
         /// <summary>
         /// Schedule a new job to run, internal
         /// </summary>
         /// <param name="job"></param>
+        /// <param name="taskScheduler"></param>
         /// <param name="token"></param>
-        internal IJobRunner ScheduleJobInternal(IJob job, CancellationToken token = default);
+        internal IJobRunner ScheduleJobInternal(IJob job, TaskScheduler taskScheduler = null, CancellationToken token = default);
     }
 }

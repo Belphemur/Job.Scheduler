@@ -37,7 +37,7 @@ jobs:
         with:
           path: ~/.nuget/packages
           # Look to see if there is a cache hit for the corresponding requirements file
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('Job.Scheduler/Job.Scheduler.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget
       - name: Restore
@@ -68,9 +68,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifact
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v2.0.10
         with:
           name: nupkg
+          path: nupkg
       - name: Push to GitHub Feed
         run: |
           for f in ./nupkg/*.*nupkg
@@ -92,13 +93,13 @@ jobs:
         with:
           path: ~/.nuget/packages
           # Look to see if there is a cache hit for the corresponding requirements file
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('Job.Scheduler/Job.Scheduler.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2.4.0
         with:
-          node-version: 14
+          node-version: 16
       - name: Cache node modules
         uses: actions/cache@v2
         env:

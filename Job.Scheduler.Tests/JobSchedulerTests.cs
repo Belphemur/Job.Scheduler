@@ -79,5 +79,17 @@ namespace Job.Scheduler.Tests
             jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value, TimeSpan.FromMilliseconds(20));
             jobRunner.Retries.Should().Be(maxRetries);
         }
+
+        [Test]
+        public async Task ExecuteInOwnScheduler()
+        {
+            using var scheduler = new MockTaskScheduler();
+            var job = new OneTimeJob();
+            var jobRunner = _scheduler.ScheduleJobInternal(job, scheduler);
+            await jobRunner.WaitForJob();
+            job.HasRun.Should().BeTrue();
+            jobRunner.Retries.Should().Be(0);
+            scheduler.Count.Should().Be(1);
+        }
     }
 }
