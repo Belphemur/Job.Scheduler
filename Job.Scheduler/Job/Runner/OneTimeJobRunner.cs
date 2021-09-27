@@ -11,7 +11,7 @@ namespace Job.Scheduler.Job.Runner
             return InnerExecuteJob(job, token);
         }
 
-        public OneTimeJobRunner(IJob job, Func<IJobRunner, Task> jobDone) : base(job, jobDone)
+        public OneTimeJobRunner(IJob job, Func<IJobRunner, Task> jobDone, TaskScheduler taskScheduler) : base(job, jobDone, taskScheduler)
         {
         }
     }
