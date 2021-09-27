@@ -13,7 +13,7 @@ namespace Job.Scheduler.Job.Runner
     /// Base implementation of <see cref="IJobRunner"/>
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class JobRunner<T> : IJobRunner where T : IJob
+    internal abstract class JobRunner<T> : IJobRunner where T : IJob
     {
         private readonly T _job;
         private CancellationTokenSource _cancellationTokenSource;
