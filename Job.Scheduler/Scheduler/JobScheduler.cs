@@ -27,9 +27,9 @@ namespace Job.Scheduler.Scheduler
         /// <summary>
         /// Schedule a new job to run
         /// </summary>
-        /// <param name="job"></param>
-        /// <param name="token"></param>
-        /// <param name="taskScheduler"></param>
+        /// <param name="job">The job to run</param>
+        /// <param name="token">If you want to cancel easily this specific job later. Default = None</param>
+        /// <param name="taskScheduler">In which TaskScheduler should the job be run. Default = TaskScheduler.Default</param>
         public JobId ScheduleJob(IJob job, CancellationToken token = default, TaskScheduler taskScheduler = null)
         {
             var runner = ((IJobScheduler) this).ScheduleJobInternal(job, taskScheduler, token);

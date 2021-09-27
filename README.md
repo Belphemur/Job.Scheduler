@@ -68,3 +68,14 @@ scheduler.Start(new MyJob());
 //You can also pass a cancellationToken to force a non graceful cancellation of the jobs.
 await scheduler.StopAsync();
 ```
+
+### Advanced
+You can also use your own TaskScheduler. It's useful if you want to control in which thread your task is run.
+```c#
+var builder = new JobRunnerBuilder();
+var scheduler = new JobScheduler(builder);
+var taskScheduler = new MyTaskScheduler();
+
+// This way, this specific instance of the job will be run in your defined task scheduler
+scheduler.Start(new MyJob(), CancellationToken.None, taskScheduler);
+```
