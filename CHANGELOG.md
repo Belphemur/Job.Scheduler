@@ -1,3 +1,10 @@
+# [2.4.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.3.0...v2.4.0) (2021-09-27)
+
+
+### Features
+
+* **TaskScheduler:** Add option to run Job on a specific TaskScheduler ([812c396](https://github.com/Belphemur/Job.Scheduler/commit/812c396a0803c21fa3e262cc1d646dcbe8cb3d86))
+
 # [2.3.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.2.2...v2.3.0) (2021-07-27)
 
 
