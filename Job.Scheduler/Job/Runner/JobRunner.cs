@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Job.Scheduler.Job.Action;
 using Job.Scheduler.Job.Exception;
 using Job.Scheduler.Utils;
@@ -22,7 +23,10 @@ namespace Job.Scheduler.Job.Runner
         private static readonly IRetryAction DefaultFailRule = new NoRetry();
         private readonly Stopwatch _stopwatch = new();
         private readonly Func<IJobRunner, Task> _jobDone;
+
+        [CanBeNull]
         private readonly TaskScheduler _taskScheduler;
+
         private static readonly ActivitySource _activitySource = new("Job.Scheduler::Runner");
 
         public Guid UniqueId { get; } = Guid.NewGuid();
@@ -30,7 +34,7 @@ namespace Job.Scheduler.Job.Runner
         public TimeSpan Elapsed => _stopwatch.Elapsed;
         public int Retries { get; private set; }
 
-        protected JobRunner(T job, Func<IJobRunner, Task> jobDone, TaskScheduler taskScheduler)
+        protected JobRunner(T job, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler)
         {
             _job = job;
             _jobDone = jobDone;
@@ -56,8 +60,10 @@ namespace Job.Scheduler.Job.Runner
 
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
-            _runningTask = Task.CompletedTask.ContinueWith(_ => StartJobAsync(_job, _cancellationTokenSource.Token), default, TaskContinuationOptions.RunContinuationsAsynchronously, _taskScheduler)
-                .Unwrap();
+            _runningTask = _taskScheduler == null
+                ? StartJobAsync(_job, _cancellationTokenSource.Token)
+                : Task.Factory.StartNew(_ => StartJobAsync(_job, _cancellationTokenSource.Token), null, _cancellationTokenSource.Token, TaskCreationOptions.None, _taskScheduler).Unwrap();
+
             _runningTaskWithDone = _runningTask.ContinueWith(_ =>
             {
                 _jobDone(this);

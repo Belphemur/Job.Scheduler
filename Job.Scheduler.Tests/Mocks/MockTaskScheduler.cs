@@ -9,16 +9,19 @@ namespace Job.Scheduler.Tests.Mocks
     public class MockTaskScheduler : TaskScheduler, IDisposable
     {
         private readonly BlockingCollection<Task> _tasksCollection = new();
-        private readonly Thread _mainThread;
+        public Thread MainThread { get; }
         private readonly CancellationTokenSource _cts = new();
         public int Count { get; private set; }
 
         public MockTaskScheduler()
         {
-            _mainThread = new Thread(Execute);
-            if (!_mainThread.IsAlive)
+            MainThread = new Thread(Execute)
             {
-                _mainThread.Start();
+                Name = "Mock Thread"
+            };
+            if (!MainThread.IsAlive)
+            {
+                MainThread.Start();
             }
         }
 
@@ -61,7 +64,7 @@ namespace Job.Scheduler.Tests.Mocks
             _cts.Cancel();
             _cts.Dispose();
             _tasksCollection.Dispose();
-            _mainThread.Join();
+            MainThread.Join();
         }
 
         public void Dispose()
