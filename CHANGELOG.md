@@ -1,3 +1,11 @@
+## [2.4.1](https://github.com/Belphemur/Job.Scheduler/compare/v2.4.0...v2.4.1) (2021-09-28)
+
+
+### Bug Fixes
+
+* **TaskScheduler:** Be sure the task are run in proper thread depending if a TaskScheduler was given or not. ([d3d0aea](https://github.com/Belphemur/Job.Scheduler/commit/d3d0aea9224e4b150b567a7cfb2288e679e8a2cd))
+* **Tests:** Wait for the right task ([99cd679](https://github.com/Belphemur/Job.Scheduler/commit/99cd679f87726515ecd1e3a7148859cc010c10ca))
+
 # [2.4.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.3.0...v2.4.0) (2021-09-27)
 
 
