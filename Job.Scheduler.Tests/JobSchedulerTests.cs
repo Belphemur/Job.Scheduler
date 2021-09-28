@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Job.Scheduler.Builder;
@@ -84,12 +85,25 @@ namespace Job.Scheduler.Tests
         public async Task ExecuteInOwnScheduler()
         {
             using var scheduler = new MockTaskScheduler();
-            var job = new OneTimeJob();
+            var job = new ThreadJob(Thread.CurrentThread);
             var jobRunner = _scheduler.ScheduleJobInternal(job, scheduler);
             await jobRunner.WaitForJob();
             job.HasRun.Should().BeTrue();
             jobRunner.Retries.Should().Be(0);
             scheduler.Count.Should().Be(1);
+            job.InitThread.Should().NotBe(job.RunThread);
+            job.RunThread.Should().Be(scheduler.MainThread);
+        }
+        
+        [Test]
+        public async Task ExecuteInDefaultScheduler()
+        {
+            var job = new ThreadJob(Thread.CurrentThread);
+            var jobRunner = _scheduler.ScheduleJobInternal(job);
+            await jobRunner.WaitForJob();
+            job.HasRun.Should().BeTrue();
+            jobRunner.Retries.Should().Be(0);
+            job.InitThread.Should().Be(job.RunThread);
         }
     }
 }

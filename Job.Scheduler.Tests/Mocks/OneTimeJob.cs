@@ -9,12 +9,12 @@ namespace Job.Scheduler.Tests.Mocks
 {
     public class OneTimeJob : IJob
     {
-        public bool HasRun { get; private set; }
+        public bool HasRun { get; set; }
 
         public IRetryAction FailRule { get; } = new NoRetry();
         public TimeSpan? MaxRuntime { get; }
 
-        public Task ExecuteAsync(CancellationToken cancellationToken)
+        public virtual Task ExecuteAsync(CancellationToken cancellationToken)
         {
             HasRun = true;
             return Task.CompletedTask;

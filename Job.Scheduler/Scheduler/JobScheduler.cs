@@ -57,7 +57,6 @@ namespace Job.Scheduler.Scheduler
 
         IJobRunner IJobScheduler.ScheduleJobInternal(IJob job, TaskScheduler taskScheduler, CancellationToken token)
         {
-            taskScheduler ??= TaskScheduler.Default;
             var runner = _jobRunnerBuilder.Build(job, jobRunner =>
             {
                 _jobs.Remove(jobRunner.UniqueId, out _);
