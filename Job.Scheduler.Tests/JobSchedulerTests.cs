@@ -129,9 +129,10 @@ namespace Job.Scheduler.Tests
             var job = new DebounceJob(list);
             var jobRunnerFirst = _scheduler.ScheduleJobInternal(job);
             await jobRunnerFirst.WaitForJob();
-            await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(50), CancellationToken.None);
+            await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(10), CancellationToken.None);
             var jobRunnerSecond = _scheduler.ScheduleJobInternal(job);
             await jobRunnerSecond.WaitForJob();
+            await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(10), CancellationToken.None);
 
             list.Should().OnlyContain(s => s == job.Key).And.HaveCount(2);
         }
