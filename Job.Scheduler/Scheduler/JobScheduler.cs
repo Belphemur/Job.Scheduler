@@ -16,7 +16,8 @@ namespace Job.Scheduler.Scheduler
     /// </summary>
     public class JobScheduler : IJobScheduler
     {
-        private readonly ConcurrentDictionary<Guid, IJobRunner> _jobs = new ConcurrentDictionary<Guid, IJobRunner>();
+        private readonly ConcurrentDictionary<Guid, IJobRunner> _jobs = new();
+        private readonly ConcurrentDictionary<string, Guid> _debouncedJobs = new();
         private readonly IJobRunnerBuilder _jobRunnerBuilder;
 
         public JobScheduler(IJobRunnerBuilder jobRunnerBuilder)
@@ -32,7 +33,7 @@ namespace Job.Scheduler.Scheduler
         /// <param name="taskScheduler">In which TaskScheduler should the job be run. Default = TaskScheduler.Default</param>
         public JobId ScheduleJob(IJob job, CancellationToken token = default, TaskScheduler taskScheduler = null)
         {
-            var runner = ((IJobScheduler) this).ScheduleJobInternal(job, taskScheduler, token);
+            var runner = ((IJobScheduler)this).ScheduleJobInternal(job, taskScheduler, token);
             return new JobId(runner.UniqueId);
         }
 
@@ -59,10 +60,17 @@ namespace Job.Scheduler.Scheduler
         {
             var runner = _jobRunnerBuilder.Build(job, jobRunner =>
             {
-                _jobs.Remove(jobRunner.UniqueId, out _);
+                _jobs.TryRemove(jobRunner.UniqueId, out _);
                 return Task.CompletedTask;
             }, taskScheduler);
             _jobs.TryAdd(runner.UniqueId, runner);
+            if (job is IDebounceJob debounceJob && _debouncedJobs.TryGetValue(debounceJob.Key, out var guid))
+            {
+                var debounceRunner = _jobs[guid];
+                debounceRunner.StopAsync(default);
+                _debouncedJobs.AddOrUpdate(debounceJob.Key, runner.UniqueId, (_, _) => runner.UniqueId);
+            }
+
             runner.Start(token);
             return runner;
         }

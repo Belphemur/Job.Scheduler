@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Job.Scheduler.Job.Action;
@@ -61,5 +62,21 @@ namespace Job.Scheduler.Job
         /// Delay before executing the job
         /// </summary>
         public TimeSpan Delay { get; }
+    }
+
+    /// <summary>
+    /// Job executed once per <see cref="DebounceTime"/> per <see cref="Key"/>
+    /// </summary>
+    public interface IDebounceJob : IJob
+    {
+        /// <summary>
+        /// UniqueID of the job
+        /// </summary>
+        public string Key { get; }
+
+        /// <summary>
+        /// Delay to wait to execute the job, to be sure there isn't any other job of the same type scheduled
+        /// </summary>
+        public TimeSpan DebounceTime { get; }
     }
 }
