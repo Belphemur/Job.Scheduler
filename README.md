@@ -19,6 +19,11 @@ By implementing the `IRecurringJob` the scheduler will run indefinitely your job
 
 By implementing the `IDelayedJob` you tell the scheduler to wait a delay before executing your job.
 
+### Debounce Job
+
+By implementing the `IDebounceJob` you tell the scheduler to only run the latest encounter of the job sharing the same key.
+
+
 ## Usage
 
 I advise you to use a Dependency Injection (DI) engine (like SimpleInjector) to register the `JobRunnerBuilder`and `JobScheduler` as singleton.
