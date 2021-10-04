@@ -68,9 +68,11 @@ namespace Job.Scheduler.Scheduler
             {
                 if (_debouncedJobs.TryGetValue(debounceJob.Key, out var guid))
                 {
-                    var debounceRunner = _jobs[guid];
-                    debounceRunner.StopAsync(default);
+                    //Job could have ended and not be available to be removed anymore
+                    _jobs.TryGetValue(guid, out var debounceRunner);
+                    debounceRunner?.StopAsync(default);
                 }
+
                 _debouncedJobs.AddOrUpdate(debounceJob.Key, runner.UniqueId, (_, _) => runner.UniqueId);
             }
 
