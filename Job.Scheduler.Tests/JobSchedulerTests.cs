@@ -114,12 +114,26 @@ namespace Job.Scheduler.Tests
             var list = new List<string>();
             var job = new DebounceJob(list);
             var jobRunnerFirst = _scheduler.ScheduleJobInternal(job);
-            TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(10), CancellationToken.None);
+            await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(10), CancellationToken.None);
             var jobRunnerSecond = _scheduler.ScheduleJobInternal(job);
             await jobRunnerFirst.WaitForJob();
             await jobRunnerSecond.WaitForJob();
 
             list.Should().ContainSingle(job.Key);
+        }
+        
+        [Test]
+        public async Task DebounceJobAlreadyFinishedTest()
+        {
+            var list = new List<string>();
+            var job = new DebounceJob(list);
+            var jobRunnerFirst = _scheduler.ScheduleJobInternal(job);
+            await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(110), CancellationToken.None);
+            var jobRunnerSecond = _scheduler.ScheduleJobInternal(job);
+            await jobRunnerFirst.WaitForJob();
+            await jobRunnerSecond.WaitForJob();
+
+            list.Should().OnlyContain(s => s == job.Key).And.HaveCount(2);
         }
     }
 }
