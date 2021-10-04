@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -6,6 +7,7 @@ using Job.Scheduler.Builder;
 using Job.Scheduler.Job.Action;
 using Job.Scheduler.Scheduler;
 using Job.Scheduler.Tests.Mocks;
+using Job.Scheduler.Utils;
 using NUnit.Framework;
 
 namespace Job.Scheduler.Tests
@@ -104,6 +106,20 @@ namespace Job.Scheduler.Tests
             job.HasRun.Should().BeTrue();
             jobRunner.Retries.Should().Be(0);
             job.InitThread.Should().Be(job.RunThread);
+        }
+
+        [Test]
+        public async Task DebounceJobTest()
+        {
+            var list = new List<string>();
+            var job = new DebounceJob(list);
+            var jobRunnerFirst = _scheduler.ScheduleJobInternal(job);
+            TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(10), CancellationToken.None);
+            var jobRunnerSecond = _scheduler.ScheduleJobInternal(job);
+            await jobRunnerFirst.WaitForJob();
+            await jobRunnerSecond.WaitForJob();
+
+            list.Should().ContainSingle(job.Key);
         }
     }
 }

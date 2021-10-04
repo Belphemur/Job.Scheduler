@@ -64,10 +64,13 @@ namespace Job.Scheduler.Scheduler
                 return Task.CompletedTask;
             }, taskScheduler);
             _jobs.TryAdd(runner.UniqueId, runner);
-            if (job is IDebounceJob debounceJob && _debouncedJobs.TryGetValue(debounceJob.Key, out var guid))
+            if (job is IDebounceJob debounceJob)
             {
-                var debounceRunner = _jobs[guid];
-                debounceRunner.StopAsync(default);
+                if (_debouncedJobs.TryGetValue(debounceJob.Key, out var guid))
+                {
+                    var debounceRunner = _jobs[guid];
+                    debounceRunner.StopAsync(default);
+                }
                 _debouncedJobs.AddOrUpdate(debounceJob.Key, runner.UniqueId, (_, _) => runner.UniqueId);
             }
 
