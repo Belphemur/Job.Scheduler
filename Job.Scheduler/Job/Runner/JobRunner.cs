@@ -16,7 +16,7 @@ namespace Job.Scheduler.Job.Runner
     /// <typeparam name="T"></typeparam>
     internal abstract class JobRunner<T> : IJobRunner where T : IJob
     {
-        private readonly T _job;
+        protected readonly T _job;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
         private Task _runningTaskWithDone;
@@ -33,6 +33,10 @@ namespace Job.Scheduler.Job.Runner
         public bool IsRunning => _cancellationTokenSource is { IsCancellationRequested: false };
         public TimeSpan Elapsed => _stopwatch.Elapsed;
         public int Retries { get; private set; }
+
+        public Type JobType => typeof(T);
+        public virtual string Key => UniqueId.ToString();
+
 
         protected JobRunner(T job, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler)
         {

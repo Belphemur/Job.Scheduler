@@ -11,7 +11,7 @@ namespace Job.Scheduler.Tests.Mocks
         private readonly BlockingCollection<Task> _tasksCollection = new();
         public Thread MainThread { get; }
         private readonly CancellationTokenSource _cts = new();
-        public int Count { get; private set; }
+        public int Scheduled { get; private set; }
 
         public MockTaskScheduler()
         {
@@ -31,8 +31,8 @@ namespace Job.Scheduler.Tests.Mocks
             {
                 foreach (var task in _tasksCollection.GetConsumingEnumerable(_cts.Token))
                 {
+                    Scheduled++;
                     TryExecuteTask(task);
-                    Count++;
                 }
             }
             catch (OperationCanceledException)

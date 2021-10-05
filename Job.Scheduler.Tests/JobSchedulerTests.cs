@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -6,6 +7,7 @@ using Job.Scheduler.Builder;
 using Job.Scheduler.Job.Action;
 using Job.Scheduler.Scheduler;
 using Job.Scheduler.Tests.Mocks;
+using Job.Scheduler.Utils;
 using NUnit.Framework;
 
 namespace Job.Scheduler.Tests
@@ -13,7 +15,6 @@ namespace Job.Scheduler.Tests
     [Parallelizable(ParallelScope.Children)]
     public class Tests
     {
-        private IJobScheduler _scheduler;
         private IJobRunnerBuilder _builder;
 
         [OneTimeSetUp]
@@ -22,17 +23,12 @@ namespace Job.Scheduler.Tests
             _builder = new JobRunnerBuilder();
         }
 
-        [SetUp]
-        public void Setup()
-        {
-            _scheduler = new JobScheduler(_builder);
-        }
-
         [Test]
         public async Task OneTimeJob()
         {
+            IJobScheduler scheduler = new JobScheduler(_builder);
             var job = new OneTimeJob();
-            var jobRunner = _scheduler.ScheduleJobInternal(job);
+            var jobRunner = scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             job.HasRun.Should().BeTrue();
         }
@@ -41,9 +37,10 @@ namespace Job.Scheduler.Tests
         [Test]
         public async Task FailingJobShouldRetry()
         {
+            IJobScheduler scheduler = new JobScheduler(_builder);
             var maxRetries = 3;
             var job = new FailingRetringJob(new RetryNTimes(maxRetries));
-            var jobRunner = _scheduler.ScheduleJobInternal(job);
+            var jobRunner = scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             job.Ran.Should().Be(4);
             jobRunner.Retries.Should().Be(maxRetries);
@@ -52,8 +49,9 @@ namespace Job.Scheduler.Tests
         [Test]
         public async Task MaxRuntimeIsRespected()
         {
+            IJobScheduler scheduler = new JobScheduler(_builder);
             var job = new MaxRuntimeJob(new NoRetry(), TimeSpan.FromMilliseconds(50));
-            var jobRunner = _scheduler.ScheduleJobInternal(job);
+            var jobRunner = scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value, TimeSpan.FromMilliseconds(20));
         }
@@ -61,9 +59,10 @@ namespace Job.Scheduler.Tests
         [Test]
         public async Task MaxRuntimeIsRespectedAndTaskRetried()
         {
+            IJobScheduler scheduler = new JobScheduler(_builder);
             var maxRetries = 2;
             var job = new MaxRuntimeJob(new RetryNTimes(maxRetries), TimeSpan.FromMilliseconds(50));
-            var jobRunner = _scheduler.ScheduleJobInternal(job);
+            var jobRunner = scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value, TimeSpan.FromMilliseconds(20));
             jobRunner.Retries.Should().Be(maxRetries);
@@ -73,9 +72,10 @@ namespace Job.Scheduler.Tests
         [Test]
         public async Task MaxRuntimeIsRespectedAndTaskRetriedWithBackoff()
         {
+            IJobScheduler scheduler = new JobScheduler(_builder);
             var maxRetries = 3;
             var job = new MaxRuntimeJob(new ExponentialBackoffRetry(TimeSpan.FromMilliseconds(10), maxRetries), TimeSpan.FromMilliseconds(80));
-            var jobRunner = _scheduler.ScheduleJobInternal(job);
+            var jobRunner = scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             jobRunner.Elapsed.Should().BeCloseTo(job.MaxRuntime!.Value, TimeSpan.FromMilliseconds(20));
             jobRunner.Retries.Should().Be(maxRetries);
@@ -84,26 +84,57 @@ namespace Job.Scheduler.Tests
         [Test]
         public async Task ExecuteInOwnScheduler()
         {
-            using var scheduler = new MockTaskScheduler();
+            IJobScheduler scheduler = new JobScheduler(_builder);
+            using var taskScheduler = new MockTaskScheduler();
             var job = new ThreadJob(Thread.CurrentThread);
-            var jobRunner = _scheduler.ScheduleJobInternal(job, scheduler);
+            var jobRunner = scheduler.ScheduleJobInternal(job, taskScheduler);
             await jobRunner.WaitForJob();
             job.HasRun.Should().BeTrue();
             jobRunner.Retries.Should().Be(0);
-            scheduler.Count.Should().Be(1);
+            taskScheduler.Scheduled.Should().Be(1);
             job.InitThread.Should().NotBe(job.RunThread);
-            job.RunThread.Should().Be(scheduler.MainThread);
+            job.RunThread.Should().Be(taskScheduler.MainThread);
         }
-        
+
         [Test]
         public async Task ExecuteInDefaultScheduler()
         {
+            IJobScheduler scheduler = new JobScheduler(_builder);
             var job = new ThreadJob(Thread.CurrentThread);
-            var jobRunner = _scheduler.ScheduleJobInternal(job);
+            var jobRunner = scheduler.ScheduleJobInternal(job);
             await jobRunner.WaitForJob();
             job.HasRun.Should().BeTrue();
             jobRunner.Retries.Should().Be(0);
             job.InitThread.Should().Be(job.RunThread);
+        }
+
+        [Test]
+        public async Task DebounceJobTest()
+        {
+            IJobScheduler scheduler = new JobScheduler(_builder);
+            var list = new List<string>();
+            var job = new DebounceJob(list, "Single");
+            var jobRunnerFirst = scheduler.ScheduleJobInternal(job);
+            await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(10), CancellationToken.None);
+            var jobRunnerSecond = scheduler.ScheduleJobInternal(job);
+            await jobRunnerFirst.WaitForJob();
+            await jobRunnerSecond.WaitForJob();
+
+            list.Should().ContainSingle(job.Key);
+        }
+
+        [Test]
+        public async Task DebounceJobAlreadyFinishedTest()
+        {
+            IJobScheduler scheduler = new JobScheduler(_builder);
+            var list = new List<string>();
+            var job = new DebounceJob(list, "Multiple");
+            var jobRunnerFirst = scheduler.ScheduleJobInternal(job);
+            await jobRunnerFirst.WaitForJob();
+            var jobRunnerSecond = scheduler.ScheduleJobInternal(job);
+            await jobRunnerSecond.WaitForJob();
+
+            list.Should().OnlyContain(s => s == job.Key).And.HaveCount(2);
         }
     }
 }

@@ -15,6 +15,11 @@ namespace Job.Scheduler.Job.Runner
         Guid UniqueId { get; }
 
         /// <summary>
+        /// Type of the job that is run by the runner
+        /// </summary>
+        Type JobType { get; }
+
+        /// <summary>
         /// Is the job still running
         /// </summary>
         bool IsRunning { get; }
@@ -28,6 +33,11 @@ namespace Job.Scheduler.Job.Runner
         /// Number of time the job has been retried
         /// </summary>
         int Retries { get; }
+
+        /// <summary>
+        /// Key of the job, used for deduplication
+        /// </summary>
+        string Key { get; }
 
         /// <summary>
         /// Run the job
