@@ -32,6 +32,6 @@ namespace Job.Scheduler.Tests.Mocks
         }
 
         public string Key => "mock-debounce";
-        public TimeSpan DebounceTime { get; } = TimeSpan.FromMilliseconds(100);
+        public TimeSpan DebounceTime { get; } = TimeSpan.FromMilliseconds(50);
     }
 }
