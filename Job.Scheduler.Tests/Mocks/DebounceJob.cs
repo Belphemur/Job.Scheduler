@@ -15,9 +15,10 @@ namespace Job.Scheduler.Tests.Mocks
 
         private readonly List<string> _list;
 
-        public DebounceJob(List<string> list)
+        public DebounceJob(List<string> list, string key)
         {
             _list = list;
+            Key = key;
         }
 
         public Task ExecuteAsync(CancellationToken cancellationToken)
@@ -31,7 +32,7 @@ namespace Job.Scheduler.Tests.Mocks
             return Task.CompletedTask;
         }
 
-        public string Key => "mock-debounce";
+        public string Key { get; }
         public TimeSpan DebounceTime { get; } = TimeSpan.FromMilliseconds(50);
     }
 }
