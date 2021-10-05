@@ -1,3 +1,15 @@
+# [2.5.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.4.1...v2.5.0) (2021-10-05)
+
+
+### Bug Fixes
+
+* **Debounce:** Job already removed when second debouncing job comes ([1fcf630](https://github.com/Belphemur/Job.Scheduler/commit/1fcf630dce12e2c451078a52fe483dba5f1f4c6a))
+
+
+### Features
+
+* **DebounceJob:** Add new feature to implement debouncing jobs ([7976d03](https://github.com/Belphemur/Job.Scheduler/commit/7976d038da7018026fa9dae27d10e84d623f3a70))
+
 ## [2.4.1](https://github.com/Belphemur/Job.Scheduler/compare/v2.4.0...v2.4.1) (2021-09-28)
 
 
