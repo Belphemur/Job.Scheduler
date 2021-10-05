@@ -33,6 +33,6 @@ namespace Job.Scheduler.Tests.Mocks
         }
 
         public string Key { get; }
-        public TimeSpan DebounceTime { get; } = TimeSpan.FromMilliseconds(50);
+        public TimeSpan DebounceTime { get; } = TimeSpan.FromMilliseconds(100);
     }
 }
