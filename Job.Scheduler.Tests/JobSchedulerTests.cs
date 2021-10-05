@@ -91,7 +91,7 @@ namespace Job.Scheduler.Tests
             await jobRunner.WaitForJob();
             job.HasRun.Should().BeTrue();
             jobRunner.Retries.Should().Be(0);
-            taskScheduler.Count.Should().Be(1);
+            taskScheduler.Scheduled.Should().Be(1);
             job.InitThread.Should().NotBe(job.RunThread);
             job.RunThread.Should().Be(taskScheduler.MainThread);
         }
