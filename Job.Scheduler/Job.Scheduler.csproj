@@ -19,7 +19,7 @@
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
-      <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="5.0.1" />
+      <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.0" />
     </ItemGroup>
 
 </Project>
