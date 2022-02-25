@@ -1,4 +1,4 @@
-name: .NET 5.0
+name: .NET 6.0
 
 on:
   push:
@@ -32,7 +32,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: 5.0.x
+          dotnet-version: 6.0.x
       - uses: actions/cache@v2
         with:
           path: ~/.nuget/packages
@@ -87,7 +87,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: 5.0.x
+          dotnet-version: 6.0.x
       - name: Cache .NET deps
         uses: actions/cache@v2
         with:
