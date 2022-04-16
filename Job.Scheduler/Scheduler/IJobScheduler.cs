@@ -37,9 +37,18 @@ namespace Job.Scheduler.Scheduler
         /// <summary>
         /// Schedule a new job to run, internal
         /// </summary>
-        /// <param name="job"></param>
+        /// <param name="jobContainer"></param>
         /// <param name="taskScheduler"></param>
         /// <param name="token"></param>
-        internal IJobRunner ScheduleJobInternal(IJob job, TaskScheduler taskScheduler = null, CancellationToken token = default);
+        IJobRunner ScheduleJobInternal(IContainerJob jobContainer, TaskScheduler taskScheduler = null, CancellationToken token = default);
+
+        /// <summary>
+        /// Schedule a new job to run through a container setup
+        /// </summary>
+        /// <param name="jobContainer">The container of the job to run</param>
+        /// <param name="token">If you want to cancel easily this specific job later. Default = None</param>
+        /// <param name="taskScheduler">In which TaskScheduler should the job be run. Default = TaskScheduler.Default</param>
+        JobId ScheduleJob(IContainerJob jobContainer, CancellationToken token = default, TaskScheduler taskScheduler = null);
+
     }
 }

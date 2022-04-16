@@ -20,9 +20,36 @@ namespace Job.Scheduler.Scheduler
         private readonly ConcurrentDictionary<string, Guid> _debouncedJobs = new();
         private readonly IJobRunnerBuilder _jobRunnerBuilder;
 
+        internal class JobContainer : IContainerJob
+        {
+            public IJob Job { get; }
+
+            public Task OnCompletedAsync(CancellationToken token)
+            {
+                return Task.CompletedTask;
+            }
+
+            public JobContainer(IJob job)
+            {
+                Job = job;
+            }
+        }
+
         public JobScheduler(IJobRunnerBuilder jobRunnerBuilder)
         {
             _jobRunnerBuilder = jobRunnerBuilder;
+        }
+
+        /// <summary>
+        /// Schedule a new job to run through a container setup
+        /// </summary>
+        /// <param name="jobContainer">The container of the job to run</param>
+        /// <param name="token">If you want to cancel easily this specific job later. Default = None</param>
+        /// <param name="taskScheduler">In which TaskScheduler should the job be run. Default = TaskScheduler.Default</param>
+        public JobId ScheduleJob(IContainerJob jobContainer, CancellationToken token = default, TaskScheduler taskScheduler = null)
+        {
+            var runner = ((IJobScheduler)this).ScheduleJobInternal(jobContainer, taskScheduler, token);
+            return new JobId(runner.UniqueId);
         }
 
         /// <summary>
@@ -32,10 +59,7 @@ namespace Job.Scheduler.Scheduler
         /// <param name="token">If you want to cancel easily this specific job later. Default = None</param>
         /// <param name="taskScheduler">In which TaskScheduler should the job be run. Default = TaskScheduler.Default</param>
         public JobId ScheduleJob(IJob job, CancellationToken token = default, TaskScheduler taskScheduler = null)
-        {
-            var runner = ((IJobScheduler)this).ScheduleJobInternal(job, taskScheduler, token);
-            return new JobId(runner.UniqueId);
-        }
+            => ScheduleJob(new JobContainer(job), token, taskScheduler);
 
         /// <summary>
         /// Stop the given job
@@ -56,12 +80,13 @@ namespace Job.Scheduler.Scheduler
         /// </summary>
         public bool HasJob(JobId jobId) => _jobs.TryGetValue(jobId.UniqueId, out _);
 
-        IJobRunner IJobScheduler.ScheduleJobInternal(IJob job, TaskScheduler taskScheduler, CancellationToken token)
+        IJobRunner IJobScheduler.ScheduleJobInternal(IContainerJob jobContainer, TaskScheduler taskScheduler, CancellationToken token)
         {
-            var runner = _jobRunnerBuilder.Build(job, jobRunner =>
+            var job = jobContainer.Job;
+            var runner = _jobRunnerBuilder.Build(job, async jobRunner =>
             {
                 _jobs.TryRemove(jobRunner.UniqueId, out _);
-                return Task.CompletedTask;
+                await jobContainer.OnCompletedAsync(token);
             }, taskScheduler);
             _jobs.TryAdd(runner.UniqueId, runner);
             if (job is IDebounceJob debounceJob)
