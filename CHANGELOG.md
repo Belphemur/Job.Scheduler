@@ -1,3 +1,12 @@
+# [2.6.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.5.1...v2.6.0) (2022-04-16)
+
+
+### Features
+
+* **Asp.net Core:** Add support for ASP.NET Core ([a4a1ce5](https://github.com/Belphemur/Job.Scheduler/commit/a4a1ce57df87610c9ea57bac9e6fd64e1e02fd67))
+* **ContainerJob:** Add concept of Container job for advance usage ([e664657](https://github.com/Belphemur/Job.Scheduler/commit/e664657f78227ac1ea56112d3f81adca892cc431))
+* **IDisposableAsync:** Add support for Async Disposable job ([0ce73fe](https://github.com/Belphemur/Job.Scheduler/commit/0ce73fe9ca3e923031b4248acbf3e3fc51a588d1))
+
 ## [2.5.1](https://github.com/Belphemur/Job.Scheduler/compare/v2.5.0...v2.5.1) (2022-04-16)
 
 
