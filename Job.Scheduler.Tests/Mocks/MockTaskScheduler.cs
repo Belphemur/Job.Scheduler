@@ -39,6 +39,10 @@ namespace Job.Scheduler.Tests.Mocks
             {
                 //ignored, just stop
             }
+            catch (ObjectDisposedException)
+            {
+                //ignored, just stop
+            }
         }
 
         protected override IEnumerable<Task> GetScheduledTasks()
