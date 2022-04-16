@@ -1,3 +1,15 @@
+# [2.7.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.6.0...v2.7.0) (2022-04-16)
+
+
+### Bug Fixes
+
+* **Docs:** Fix documentation ([b2cc37f](https://github.com/Belphemur/Job.Scheduler/commit/b2cc37f8952d47eb15a3774789c0b43455d102fe))
+
+
+### Features
+
+* **ServiceCollection:** Add easy method to add Job as scoped ([62e4a5e](https://github.com/Belphemur/Job.Scheduler/commit/62e4a5e4e0a9c881f17417b6021649d34dd96abf))
+
 # [2.6.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.5.1...v2.6.0) (2022-04-16)
 
 
