@@ -84,3 +84,5 @@ var taskScheduler = new MyTaskScheduler();
 // This way, this specific instance of the job will be run in your defined task scheduler
 scheduler.Start(new MyJob(), CancellationToken.None, taskScheduler);
 ```
+### Disposable
+If your job implement `IAsyncDisposable` the disposing will be called when the job has finished running.
