@@ -1,3 +1,10 @@
+## [2.5.1](https://github.com/Belphemur/Job.Scheduler/compare/v2.5.0...v2.5.1) (2022-04-16)
+
+
+### Bug Fixes
+
+* **Debounce:** Make debounce wait for the inner job ([687aca7](https://github.com/Belphemur/Job.Scheduler/commit/687aca7b0078a997908c57a14648ef6a8e4810bd))
+
 # [2.5.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.4.1...v2.5.0) (2021-10-05)
 
 
