@@ -79,6 +79,8 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           source-url: ${{env.GITHUB_FEED}}
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Push generated package to GitHub registry
         run: dotnet nuget push nupkg/*.nupkg --skip-duplicate --no-symbols true --api-key ${{secrets.GITHUB_TOKEN}}
       - name: Clean up old Main packages
@@ -131,5 +133,9 @@ jobs:
         run: npm ci
       - name: Release
         run: npx semantic-release
-      - name: Push generated package to GitHub registry
-        run: dotnet nuget push nupkg/*.nupkg --skip-duplicate --no-symbols true --api-key ${{secrets.GITHUB_TOKEN}}
+      - name: Push to GitHub Feed
+        run: |
+          for f in ./nupkg/*.nupkg
+          do
+            curl -vX PUT -u "$GITHUB_USER:$GITHUB_TOKEN" -F package=@$f $GITHUB_FEED
+          done
