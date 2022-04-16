@@ -86,13 +86,13 @@ jobs:
         with:
           package-name: "${{env.PROJECT_NAME}}"
           min-versions-to-keep: 10
-          delete-only-pre-release-versions: "true"
+          ignore-versions: '^\\d{1,8}\\.\\d+\\.\\d+$'
       - name: Clean up old Asp.net Core packages
         uses: actions/delete-package-versions@v3
         with:
           package-name: "${{env.PROJECT_NAME}}.AspNetCore"
           min-versions-to-keep: 10
-          delete-only-pre-release-versions: "true"
+          ignore-versions: '^\\d{1,8}\\.\\d+\\.\\d+$'
   deploy:
     needs: build
     if: github.ref == 'refs/heads/master'
