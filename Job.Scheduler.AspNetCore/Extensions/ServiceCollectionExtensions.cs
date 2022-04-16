@@ -2,6 +2,7 @@
 using Job.Scheduler.AspNetCore.Builder;
 using Job.Scheduler.AspNetCore.Configuration;
 using Job.Scheduler.Builder;
+using Job.Scheduler.Job;
 using Job.Scheduler.Scheduler;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,6 +30,18 @@ public static class ServiceCollectionExtensions
         });
         services.AddSingleton<IJobBuilder, JobBuilder>();
 
+        return services;
+    }
+
+    /// <summary>
+    /// Register the job in the service collection
+    /// </summary>
+    /// <param name="services"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static IServiceCollection AddJob<T>(this IServiceCollection services) where T : IJob
+    {
+        services.AddScoped(typeof(T));
         return services;
     }
 }
