@@ -14,7 +14,7 @@ public static class ServiceCollectionExtensions
     /// Register the job scheduler
     /// </summary>
     /// <param name="services"></param>
-    /// <param name="configuration"></param>
+    /// <param name="config">Used to setup Startup Jobs</param>
     /// <returns></returns>
     public static IServiceCollection AddJobScheduler(this IServiceCollection services, Action<JobSchedulerStartupConfig>? config = null)
     {
