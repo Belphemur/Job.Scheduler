@@ -47,7 +47,7 @@ jobs:
       - name: Test
         run: dotnet test -c Release --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}" 
       - name: Upload test results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dotnet-results-${{ matrix.dotnet-version }}
           path: TestResults-${{ matrix.dotnet-version }}
@@ -58,7 +58,7 @@ jobs:
         run: dotnet pack -v normal -c Release --no-restore --include-symbols --include-source  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion="0.0.${GITHUB_RUN_ID}-nightly" $PROJECT_NAME/$PROJECT_NAME.*proj    
       - name: Upload Artifact
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: nupkg
           path: ${{ env.PROJECT_NAME }}/bin/Release/*.*nupkg
