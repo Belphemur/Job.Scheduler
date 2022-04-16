@@ -17,7 +17,7 @@ namespace Job.Scheduler.Job.Runner
                 return;
             }
 
-            InnerExecuteJob(job, token);
+            await InnerExecuteJob(job, token);
         }
 
         public DebounceJobRunner(IDebounceJob job, Func<IJobRunner, Task> jobDone, TaskScheduler taskScheduler) : base(job, jobDone, taskScheduler)
