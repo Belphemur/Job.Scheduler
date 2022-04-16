@@ -68,12 +68,17 @@ namespace Job.Scheduler.Job.Runner
                 ? StartJobAsync(_job, _cancellationTokenSource.Token)
                 : Task.Factory.StartNew(_ => StartJobAsync(_job, _cancellationTokenSource.Token), null, _cancellationTokenSource.Token, TaskCreationOptions.None, _taskScheduler).Unwrap();
 
-            _runningTaskWithDone = _runningTask.ContinueWith(_ =>
+            _runningTaskWithDone = _runningTask.ContinueWith(async _ =>
             {
-                _jobDone(this);
+                if (_job is IAsyncDisposable asyncDisposable)
+                {
+                    await asyncDisposable.DisposeAsync();
+                }
+
+                await _jobDone(this);
                 _runningTask.Dispose();
                 _cancellationTokenSource.Dispose();
-            }, CancellationToken.None);
+            }, CancellationToken.None).Unwrap();
         }
 
 

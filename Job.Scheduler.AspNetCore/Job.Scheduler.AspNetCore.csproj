@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <PackageId>Job.Scheduler.AspNetCore</PackageId>
+        <Version>2.5.1</Version>
+        <Authors>Antoine Aflalo</Authors>
+        <Description>A simple job scheduling library relying on the async/await pattern in C#. Supports Recurring Jobs, Delayed Jobs and One Time Jobs. Helper for ASP.NET Core.</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/Belphemur/Job.Scheduler</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Belphemur/Job.Scheduler</RepositoryUrl>
+    </PropertyGroup>
+
+  
+    <ItemGroup>
+      <PackageReference Include="Job.Scheduler" Version="2.5.1" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+    </ItemGroup>
+
+  
+    <ItemGroup>
+      <ProjectReference Include="..\Job.Scheduler\Job.Scheduler.csproj" />
+    </ItemGroup>
+
+</Project>

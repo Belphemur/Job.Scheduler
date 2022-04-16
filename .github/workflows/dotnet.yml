@@ -53,15 +53,18 @@ jobs:
           path: TestResults-${{ matrix.dotnet-version }}
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
-      - name: Pack
+      - name: Pack Main
         if: matrix.os == 'ubuntu-latest'
-        run: dotnet pack -v normal -c Release --no-restore --include-symbols --include-source  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion="0.0.0-nightly${GITHUB_RUN_ID}" $PROJECT_NAME/$PROJECT_NAME.*proj    
+        run: dotnet pack -v normal -c Release --no-restore --include-symbols --include-source -o nupkg  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion="0.0.0-nightly${GITHUB_RUN_ID}" $PROJECT_NAME/$PROJECT_NAME.*proj 
+      - name: Pack Asp.Net Core
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet pack -v normal -c Release --no-restore --include-symbols --include-source -o nupkg  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion="0.0.0-nightly${GITHUB_RUN_ID}" ${PROJECT_NAME}.AspNetCore/${PROJECT_NAME}.AspNetCore.*proj
       - name: Upload Artifact
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v3
         with:
           name: nupkg
-          path: ${{ env.PROJECT_NAME }}/bin/Release/*.*nupkg
+          path: nupkg/*.*nupkg
   prerelease:
     needs: build
     if: github.ref == 'refs/heads/develop'
@@ -74,10 +77,22 @@ jobs:
           path: nupkg
       - name: Push to GitHub Feed
         run: |
-          for f in ./nupkg/*.*nupkg
+          for f in ./nupkg/*.nupkg
           do
             curl -vX PUT -u "$GITHUB_USER:$GITHUB_TOKEN" -F package=@$f $GITHUB_FEED
           done
+      - name: Clean up old Main packages
+        uses: actions/delete-package-versions@v3
+        with:
+          package-name: "${{env.PROJECT_NAME}}"
+          min-versions-to-keep: 10
+          ignore-versions: '^\\d{1,8}\\.\\d+\\.\\d+$'
+      - name: Clean up old Asp.net Core packages
+        uses: actions/delete-package-versions@v3
+        with:
+          package-name: "${{env.PROJECT_NAME}}.AspNetCore"
+          min-versions-to-keep: 10
+          ignore-versions: '^\\d{1,8}\\.\\d+\\.\\d+$'
   deploy:
     needs: build
     if: github.ref == 'refs/heads/master'
