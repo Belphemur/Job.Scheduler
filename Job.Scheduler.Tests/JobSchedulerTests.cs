@@ -9,6 +9,7 @@ using Job.Scheduler.Job.Action;
 using Job.Scheduler.Scheduler;
 using Job.Scheduler.Tests.Mocks;
 using Job.Scheduler.Utils;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Job.Scheduler.Tests
@@ -32,6 +33,21 @@ namespace Job.Scheduler.Tests
             var jobRunner = scheduler.ScheduleJobInternal(new JobScheduler.JobContainer(job));
             await jobRunner.WaitForJob();
             job.HasRun.Should().BeTrue();
+        }
+
+        [Test]
+        public async Task OneTimeJobWithOnCompleted()
+        {
+            IJobScheduler scheduler = new JobScheduler(_builder);
+            var job = new OneTimeJob();
+            
+            var container = Substitute.For<IContainerJob>();
+            container.Job.Returns(job);
+            
+            var jobRunner = scheduler.ScheduleJobInternal(container);
+            await jobRunner.WaitForJob();
+            job.HasRun.Should().BeTrue();
+            await container.Received(1).OnCompletedAsync(Arg.Any<CancellationToken>());
         }
 
 
