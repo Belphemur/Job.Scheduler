@@ -8,6 +8,9 @@ using Job.Scheduler.Job.Runner;
 
 namespace Job.Scheduler.Builder
 {
+    /// <summary>
+    /// Take care of building the runner for different type of <see cref="IJob"/>
+    /// </summary>
     public class JobRunnerBuilder : IJobRunnerBuilder
     {
         private readonly Dictionary<Type, Type> _jobTypeToRunnerTypeDictionary;
@@ -25,7 +28,7 @@ namespace Job.Scheduler.Builder
         /// <summary>
         /// Build a Job runner for the given job
         /// </summary>
-        public IJobRunner Build(IJob job, Func<IJobRunner, Task> jobDone)
+        public IJobRunner Build(IJob job, Func<IJobRunner, Task> jobDone, TaskScheduler taskScheduler)
         {
             var mainTypeJob = job.GetType();
             if (!_jobToRunner.TryGetValue(mainTypeJob, out var runner))
@@ -35,7 +38,7 @@ namespace Job.Scheduler.Builder
                 _jobToRunner.TryAdd(mainTypeJob, runner);
             }
 
-            return (IJobRunner) Activator.CreateInstance(runner, job, jobDone);
+            return (IJobRunner) Activator.CreateInstance(runner, job, jobDone, taskScheduler);
         }
     }
 }

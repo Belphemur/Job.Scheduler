@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Job.Scheduler.Job.Action;
 using Job.Scheduler.Job.Exception;
 using Job.Scheduler.Utils;
@@ -12,9 +14,9 @@ namespace Job.Scheduler.Job.Runner
     /// Base implementation of <see cref="IJobRunner"/>
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class JobRunner<T> : IJobRunner where T : IJob
+    internal abstract class JobRunner<T> : IJobRunner where T : IJob
     {
-        private readonly T _job;
+        protected readonly T _job;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
         private Task _runningTaskWithDone;
@@ -22,15 +24,25 @@ namespace Job.Scheduler.Job.Runner
         private readonly Stopwatch _stopwatch = new();
         private readonly Func<IJobRunner, Task> _jobDone;
 
+        [CanBeNull]
+        private readonly TaskScheduler _taskScheduler;
+
+        private static readonly ActivitySource _activitySource = new("Job.Scheduler::Runner");
+
         public Guid UniqueId { get; } = Guid.NewGuid();
-        public bool IsRunning => _cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested;
+        public bool IsRunning => _cancellationTokenSource is { IsCancellationRequested: false };
         public TimeSpan Elapsed => _stopwatch.Elapsed;
         public int Retries { get; private set; }
 
-        protected JobRunner(T job, Func<IJobRunner, Task> jobDone)
+        public Type JobType => typeof(T);
+        public virtual string Key => UniqueId.ToString();
+
+
+        protected JobRunner(T job, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler)
         {
             _job = job;
             _jobDone = jobDone;
+            _taskScheduler = taskScheduler;
         }
 
         /// <summary>
@@ -49,10 +61,19 @@ namespace Job.Scheduler.Job.Runner
             {
                 throw new InvalidOperationException("Can't start a running job");
             }
+
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
-            _runningTask = StartJobAsync(_job, _cancellationTokenSource.Token);
-            _runningTaskWithDone = _runningTask.ContinueWith(task => _jobDone(this), CancellationToken.None);
+            _runningTask = _taskScheduler == null
+                ? StartJobAsync(_job, _cancellationTokenSource.Token)
+                : Task.Factory.StartNew(_ => StartJobAsync(_job, _cancellationTokenSource.Token), null, _cancellationTokenSource.Token, TaskCreationOptions.None, _taskScheduler).Unwrap();
+
+            _runningTaskWithDone = _runningTask.ContinueWith(_ =>
+            {
+                _jobDone(this);
+                _runningTask.Dispose();
+                _cancellationTokenSource.Dispose();
+            }, CancellationToken.None);
         }
 
 
@@ -70,12 +91,13 @@ namespace Job.Scheduler.Job.Runner
 
             _cancellationTokenSource.Cancel();
             await Task.WhenAny(TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(-1), token), _runningTaskWithDone);
+            _stopwatch.Stop();
             return _stopwatch.Elapsed;
         }
 
         Task IJobRunner.WaitForJob()
         {
-            return _runningTask;
+            return _runningTaskWithDone;
         }
 
         /// <summary>
@@ -91,9 +113,15 @@ namespace Job.Scheduler.Job.Runner
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, maxRuntimeCts.Token);
             var runtimeMaxLinkedToken = linkedCts.Token;
             _stopwatch.Restart();
+            using var activity = _activitySource.StartActivity("Running Job", ActivityKind.Internal, null, new[]
+            {
+                new KeyValuePair<string, object>("JobClass", job.GetType().Name),
+                new KeyValuePair<string, object>("Retries", Retries)
+            });
             try
             {
                 await job.ExecuteAsync(runtimeMaxLinkedToken);
+                Retries = 0;
             }
             catch (System.Exception e)
             {
@@ -106,13 +134,16 @@ namespace Job.Scheduler.Job.Runner
                     }
 
                     await job.OnFailure(jobException);
-                    var retry = job.FailRule ?? DefaultFailRule;
-                    if (retry.ShouldRetry(Retries))
+
+                    var retryRule = job.FailRule ?? DefaultFailRule;
+                    if (retryRule.ShouldRetry(Retries))
                     {
+                        var delay = retryRule.GetDelayBetweenRetries(Retries);
                         Retries++;
-                        if (retry.DelayBetweenRetries.HasValue)
+
+                        if (delay.HasValue)
                         {
-                            await TaskUtils.WaitForDelayOrCancellation(retry.DelayBetweenRetries.Value, cancellationToken);
+                            await TaskUtils.WaitForDelayOrCancellation(delay.Value, cancellationToken);
                         }
 
                         if (cancellationToken.IsCancellationRequested)
@@ -135,16 +166,6 @@ namespace Job.Scheduler.Job.Runner
                     _stopwatch.Stop();
                 }
             }
-        }
-
-        /// <summary>
-        /// Dispose runner
-        /// </summary>
-        public void Dispose()
-        {
-            _cancellationTokenSource.Dispose();
-            _runningTask.Dispose();
-            _runningTaskWithDone.Dispose();
         }
     }
 }

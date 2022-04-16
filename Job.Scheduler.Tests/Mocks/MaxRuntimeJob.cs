@@ -10,12 +10,14 @@ namespace Job.Scheduler.Tests.Mocks
     public class MaxRuntimeJob : IJob
     {
         public IRetryAction FailRule { get; }
-        public TimeSpan? MaxRuntime { get; } = TimeSpan.FromMilliseconds(50);
+        public TimeSpan? MaxRuntime { get; }
 
-        public MaxRuntimeJob(IRetryAction failRule)
+        public MaxRuntimeJob(IRetryAction failRule, TimeSpan? maxRuntime)
         {
             FailRule = failRule;
+            MaxRuntime = maxRuntime;
         }
+
 
         public async Task ExecuteAsync(CancellationToken cancellationToken)
         {

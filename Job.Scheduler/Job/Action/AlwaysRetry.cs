@@ -7,11 +7,21 @@ namespace Job.Scheduler.Job.Action
     /// </summary>
     public class AlwaysRetry : IRetryAction
     {
-        public TimeSpan? DelayBetweenRetries { get; }
+        private readonly TimeSpan? _delayBetweenRetries;
+
+        public AlwaysRetry(TimeSpan? delayBetweenRetries = null)
+        {
+            _delayBetweenRetries = delayBetweenRetries;
+        }
 
         public bool ShouldRetry(int currentRetry)
         {
             return true;
+        }
+
+        public TimeSpan? GetDelayBetweenRetries(int currentRetry)
+        {
+            return _delayBetweenRetries;
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿# Job Scheduler
 
-[![.NET 5.0](https://github.com/Belphemur/Job.Scheduler/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Belphemur/Job.Scheduler/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/Belphemur/Job.Scheduler/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Belphemur/Job.Scheduler/actions/workflows/dotnet.yml)
 
 A simple job scheduling library relying on the async/await pattern in C#.
 
@@ -18,6 +18,11 @@ By implementing the `IRecurringJob` the scheduler will run indefinitely your job
 ### Delayed Job
 
 By implementing the `IDelayedJob` you tell the scheduler to wait a delay before executing your job.
+
+### Debounce Job
+
+By implementing the `IDebounceJob` you tell the scheduler to only run the latest encounter of the job sharing the same key.
+
 
 ## Usage
 
@@ -67,4 +72,15 @@ scheduler.Start(new MyJob());
 //At the end of your application, you can ask the Scheduler to gracefully stop the running jobs and wait for them to stop.
 //You can also pass a cancellationToken to force a non graceful cancellation of the jobs.
 await scheduler.StopAsync();
+```
+
+### Advanced
+You can also use your own TaskScheduler. It's useful if you want to control in which thread your task is run.
+```c#
+var builder = new JobRunnerBuilder();
+var scheduler = new JobScheduler(builder);
+var taskScheduler = new MyTaskScheduler();
+
+// This way, this specific instance of the job will be run in your defined task scheduler
+scheduler.Start(new MyJob(), CancellationToken.None, taskScheduler);
 ```

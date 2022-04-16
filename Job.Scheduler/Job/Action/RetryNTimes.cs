@@ -8,18 +8,23 @@ namespace Job.Scheduler.Job.Action
     public class RetryNTimes : IRetryAction
     {
         private readonly int _maxRetries;
+        private readonly TimeSpan? _delayBetweenRetries;
 
-        public TimeSpan? DelayBetweenRetries { get; }
 
         public RetryNTimes(int maxRetries, TimeSpan? delayBetweenRetries = null)
         {
             _maxRetries = maxRetries;
-            DelayBetweenRetries = delayBetweenRetries;
+            _delayBetweenRetries = delayBetweenRetries;
         }
 
         public bool ShouldRetry(int currentRetry)
         {
             return currentRetry < _maxRetries;
+        }
+
+        public TimeSpan? GetDelayBetweenRetries(int currentRetry)
+        {
+            return _delayBetweenRetries;
         }
     }
 }

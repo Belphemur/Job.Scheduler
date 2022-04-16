@@ -7,12 +7,17 @@ namespace Job.Scheduler.Job.Runner
     /// <summary>
     /// Used to run the job
     /// </summary>
-    public interface IJobRunner : IDisposable
+    public interface IJobRunner
     {
         /// <summary>
         /// Unique ID of the job runner
         /// </summary>
         Guid UniqueId { get; }
+
+        /// <summary>
+        /// Type of the job that is run by the runner
+        /// </summary>
+        Type JobType { get; }
 
         /// <summary>
         /// Is the job still running
@@ -28,6 +33,11 @@ namespace Job.Scheduler.Job.Runner
         /// Number of time the job has been retried
         /// </summary>
         int Retries { get; }
+
+        /// <summary>
+        /// Key of the job, used for deduplication
+        /// </summary>
+        string Key { get; }
 
         /// <summary>
         /// Run the job

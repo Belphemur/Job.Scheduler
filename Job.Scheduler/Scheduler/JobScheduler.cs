@@ -11,9 +11,13 @@ using Job.Scheduler.Job.Runner;
 
 namespace Job.Scheduler.Scheduler
 {
+    /// <summary>
+    /// Takes care of scheduling new <see cref="IJob"/> and managing them.
+    /// </summary>
     public class JobScheduler : IJobScheduler
     {
-        private readonly ConcurrentDictionary<Guid, IJobRunner> _jobs = new ConcurrentDictionary<Guid, IJobRunner>();
+        private readonly ConcurrentDictionary<Guid, IJobRunner> _jobs = new();
+        private readonly ConcurrentDictionary<string, Guid> _debouncedJobs = new();
         private readonly IJobRunnerBuilder _jobRunnerBuilder;
 
         public JobScheduler(IJobRunnerBuilder jobRunnerBuilder)
@@ -24,11 +28,12 @@ namespace Job.Scheduler.Scheduler
         /// <summary>
         /// Schedule a new job to run
         /// </summary>
-        /// <param name="job"></param>
-        /// <param name="token"></param>
-        public JobId ScheduleJob(IJob job, CancellationToken token = default)
+        /// <param name="job">The job to run</param>
+        /// <param name="token">If you want to cancel easily this specific job later. Default = None</param>
+        /// <param name="taskScheduler">In which TaskScheduler should the job be run. Default = TaskScheduler.Default</param>
+        public JobId ScheduleJob(IJob job, CancellationToken token = default, TaskScheduler taskScheduler = null)
         {
-            var runner = ((IJobScheduler) this).ScheduleJobInternal(job, token);
+            var runner = ((IJobScheduler)this).ScheduleJobInternal(job, taskScheduler, token);
             return new JobId(runner.UniqueId);
         }
 
@@ -51,21 +56,26 @@ namespace Job.Scheduler.Scheduler
         /// </summary>
         public bool HasJob(JobId jobId) => _jobs.TryGetValue(jobId.UniqueId, out _);
 
-        IJobRunner IJobScheduler.ScheduleJobInternal(IJob job, CancellationToken token)
+        IJobRunner IJobScheduler.ScheduleJobInternal(IJob job, TaskScheduler taskScheduler, CancellationToken token)
         {
-            var runner = _jobRunnerBuilder.Build(job, async jobRunner =>
+            var runner = _jobRunnerBuilder.Build(job, jobRunner =>
             {
-                _jobs.Remove(jobRunner.UniqueId, out _);
-                try
-                {
-                    await jobRunner.StopAsync(default);
-                }
-                finally
-                {
-                    jobRunner.Dispose();
-                }
-            });
+                _jobs.TryRemove(jobRunner.UniqueId, out _);
+                return Task.CompletedTask;
+            }, taskScheduler);
             _jobs.TryAdd(runner.UniqueId, runner);
+            if (job is IDebounceJob debounceJob)
+            {
+                if (_debouncedJobs.TryGetValue(debounceJob.Key, out var guid))
+                {
+                    //Job could have ended and not be available to be removed anymore
+                    _jobs.TryGetValue(guid, out var debounceRunner);
+                    debounceRunner?.StopAsync(default);
+                }
+
+                _debouncedJobs.AddOrUpdate(debounceJob.Key, runner.UniqueId, (_, _) => runner.UniqueId);
+            }
+
             runner.Start(token);
             return runner;
         }
