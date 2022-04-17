@@ -1,3 +1,10 @@
+## [2.7.1](https://github.com/Belphemur/Job.Scheduler/compare/v2.7.0...v2.7.1) (2022-04-17)
+
+
+### Bug Fixes
+
+* **Asp.Net Core:** Add missing documentation ([8d62525](https://github.com/Belphemur/Job.Scheduler/commit/8d6252524a90e26f1954c99b4eac3e05a6504ca6))
+
 # [2.7.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.6.0...v2.7.0) (2022-04-16)
 
 
