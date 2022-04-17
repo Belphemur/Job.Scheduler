@@ -3,6 +3,9 @@ using Job.Scheduler.Job;
 
 namespace Job.Scheduler.AspNetCore.Configuration;
 
+/// <summary>
+/// Help setting up the job we want to have running at startup
+/// </summary>
 public class JobSchedulerStartupConfig
 {
     private readonly IJobBuilder _jobBuilder;
