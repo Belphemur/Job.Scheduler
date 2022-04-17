@@ -2,6 +2,9 @@
 
 namespace Job.Scheduler.AspNetCore.Builder;
 
+/// <summary>
+/// Helper to build job using the DI of Asp.NET Core
+/// </summary>
 public interface IJobBuilder
 {
     /// <summary>
