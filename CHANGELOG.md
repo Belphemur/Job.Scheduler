@@ -1,3 +1,10 @@
+## [2.7.2](https://github.com/Belphemur/Job.Scheduler/compare/v2.7.1...v2.7.2) (2022-05-09)
+
+
+### Bug Fixes
+
+* **Docs:** Include source code in the symbol package ([f44c536](https://github.com/Belphemur/Job.Scheduler/commit/f44c536fb2577eae446a64bbf6c3b52cf6ca94d8))
+
 ## [2.7.1](https://github.com/Belphemur/Job.Scheduler/compare/v2.7.0...v2.7.1) (2022-04-17)
 
 
