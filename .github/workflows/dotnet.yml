@@ -55,10 +55,10 @@ jobs:
         if: ${{ always() }}
       - name: Pack Main
         if: matrix.os == 'ubuntu-latest'
-        run: dotnet pack -v normal -c Release --no-restore --include-symbols --include-source -o nupkg  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion="0.0.0-nightly${GITHUB_RUN_ID}" $PROJECT_NAME/$PROJECT_NAME.*proj 
+        run: dotnet pack -v normal -c Release --no-restore --include-source -o nupkg  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion="0.0.0-nightly${GITHUB_RUN_ID}" $PROJECT_NAME/$PROJECT_NAME.*proj 
       - name: Pack Asp.Net Core
         if: matrix.os == 'ubuntu-latest'
-        run: dotnet pack -v normal -c Release --no-restore --include-symbols --include-source -o nupkg  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion="0.0.0-nightly${GITHUB_RUN_ID}" ${PROJECT_NAME}.AspNetCore/${PROJECT_NAME}.AspNetCore.*proj
+        run: dotnet pack -v normal -c Release --no-restore --include-source -o nupkg  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion="0.0.0-nightly${GITHUB_RUN_ID}" ${PROJECT_NAME}.AspNetCore/${PROJECT_NAME}.AspNetCore.*proj
       - name: Upload Artifact
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v3
