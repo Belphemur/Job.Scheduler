@@ -1,3 +1,10 @@
+# [2.8.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.7.3...v2.8.0) (2022-07-12)
+
+
+### Features
+
+* **ExponentialDecorrelatedJittedBackoffRetry:** Add a new retry strategy that is better than the normal exponential retry ([4c0277e](https://github.com/Belphemur/Job.Scheduler/commit/4c0277ecbda7fa3ef37070568cba4e10bb7ec405))
+
 ## [2.7.3](https://github.com/Belphemur/Job.Scheduler/compare/v2.7.2...v2.7.3) (2022-05-09)
 
 
