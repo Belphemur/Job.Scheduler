@@ -9,7 +9,6 @@
 
     <PropertyGroup>
         <PackageId>Job.Scheduler.AspNetCore</PackageId>
-        <Version>2.5.1</Version>
         <Authors>Antoine Aflalo</Authors>
         <Description>A simple job scheduling library relying on the async/await pattern in C#. Supports Recurring Jobs, Delayed Jobs and One Time Jobs. Helper for ASP.NET Core.</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>

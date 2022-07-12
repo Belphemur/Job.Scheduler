@@ -153,5 +153,19 @@ namespace Job.Scheduler.Tests
 
             list.Should().OnlyContain(s => s == job.Key).And.HaveCount(2);
         }
+
+        [Test]
+        public void DecorrelatedBackOffTest()
+        {
+            var max = 10;
+            var backoff = new ExponentialDecorrelatedJittedBackoffRetry(max, TimeSpan.FromSeconds(5));
+            for (var i = 0; i < max; i++)
+            {
+                backoff.ShouldRetry(i).Should().BeTrue();
+                backoff.GetDelayBetweenRetries(i);
+            }
+
+            backoff.ShouldRetry(max).Should().BeFalse();
+        }
     }
 }
