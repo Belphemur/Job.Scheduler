@@ -26,7 +26,7 @@ public static class ServiceCollectionExtensions
             var jobScheduler = provider.GetRequiredService<IJobScheduler>();
             var configuration = provider.GetRequiredService<JobSchedulerStartupConfig>();
             config?.Invoke(configuration);
-            return new JobSchedulerHostedService(jobScheduler, configuration.Jobs);
+            return new JobSchedulerHostedService(jobScheduler, configuration);
         });
         services.AddSingleton<IJobBuilder, JobBuilder>();
 
