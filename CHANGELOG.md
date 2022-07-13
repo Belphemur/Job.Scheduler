@@ -1,3 +1,11 @@
+# [2.9.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.8.0...v2.9.0) (2022-07-13)
+
+
+### Features
+
+* **Queue:** Add registration of queue part of ASP.NET JobScheduler configuration ([eeb07fb](https://github.com/Belphemur/Job.Scheduler/commit/eeb07fb794cf6b6dabf5246e014dd5b200f835ce))
+* **Queue:** Add support for queue. It's possible to register queues with their own max concurrency. ([1f0ae91](https://github.com/Belphemur/Job.Scheduler/commit/1f0ae91c868606e3931d43c85db33efa04efd6a5))
+
 # [2.8.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.7.3...v2.8.0) (2022-07-12)
 
 
