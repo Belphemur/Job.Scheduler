@@ -79,4 +79,20 @@ namespace Job.Scheduler.Job
         /// </summary>
         public TimeSpan DebounceTime { get; }
     }
+
+    /// <summary>
+    /// A job that is queued and follow the setting of the queue to be run
+    /// </summary>
+    public interface IQueueJob : IJob
+    {
+        /// <summary>
+        /// UniqueID of the job
+        /// </summary>
+        public string Key { get; }
+
+        /// <summary>
+        /// UniqueID of the queue where the job is run
+        /// </summary>
+        public string QueueId { get; }
+    }
 }

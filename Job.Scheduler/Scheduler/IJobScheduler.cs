@@ -1,8 +1,10 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Job.Scheduler.Job;
 using Job.Scheduler.Job.Data;
 using Job.Scheduler.Job.Runner;
+using Job.Scheduler.Queue;
 
 namespace Job.Scheduler.Scheduler
 {
@@ -40,7 +42,7 @@ namespace Job.Scheduler.Scheduler
         /// <param name="jobContainer"></param>
         /// <param name="taskScheduler"></param>
         /// <param name="token"></param>
-        IJobRunner ScheduleJobInternal(IContainerJob jobContainer, TaskScheduler taskScheduler = null, CancellationToken token = default);
+        internal IJobRunner ScheduleJobInternal(IContainerJob jobContainer, TaskScheduler taskScheduler = null, CancellationToken token = default);
 
         /// <summary>
         /// Schedule a new job to run through a container setup
@@ -50,5 +52,18 @@ namespace Job.Scheduler.Scheduler
         /// <param name="taskScheduler">In which TaskScheduler should the job be run. Default = TaskScheduler.Default</param>
         JobId ScheduleJob(IContainerJob jobContainer, CancellationToken token = default, TaskScheduler taskScheduler = null);
 
+        /// <summary>
+        /// Register a queue
+        /// </summary>
+        /// <param name="queueSettings"></param>
+        /// <exception cref="ArgumentException">Queue already exists</exception>
+        void RegisterQueue(QueueSettings queueSettings);
+
+        /// <summary>
+        /// Get the queue from the id
+        /// </summary>
+        /// <param name="queueId"></param>
+        /// <returns></returns>
+        internal Queue.Queue GetQueue(string queueId);
     }
 }
