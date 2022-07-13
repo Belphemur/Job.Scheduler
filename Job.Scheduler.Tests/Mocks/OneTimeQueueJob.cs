@@ -30,7 +30,7 @@ namespace Job.Scheduler.Tests.Mocks
 
         public Task OnFailure(JobException exception)
         {
-            return Task.FromResult<IRetryAction>(new AlwaysRetry());
+            return Task.CompletedTask;
         }
 
         public string Key { get; set; } = "test";
