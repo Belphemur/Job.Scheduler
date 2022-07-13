@@ -1,5 +1,6 @@
 ﻿using Job.Scheduler.AspNetCore.Builder;
 using Job.Scheduler.Job;
+using Job.Scheduler.Queue;
 
 namespace Job.Scheduler.AspNetCore.Configuration;
 
@@ -16,6 +17,7 @@ public class JobSchedulerStartupConfig
     }
 
     private readonly List<IContainerJob> _jobs = new();
+    private readonly List<QueueSettings> _queueSettings = new();
 
     /// <summary>
     /// Add job that will be run at startup
@@ -28,5 +30,17 @@ public class JobSchedulerStartupConfig
         return this;
     }
 
+    /// <summary>
+    /// Register specific queue
+    /// </summary>
+    /// <param name="queueSettings"></param>
+    /// <returns></returns>
+    public JobSchedulerStartupConfig RegisterQueue(QueueSettings queueSettings)
+    {
+        _queueSettings.Add(queueSettings);
+        return this;
+    }
+
     internal IEnumerable<IContainerJob> Jobs => _jobs;
+    internal IEnumerable<QueueSettings> QueueSettings => _queueSettings;
 }

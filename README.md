@@ -23,6 +23,8 @@ By implementing the `IDelayedJob` you tell the scheduler to wait a delay before 
 
 By implementing the `IDebounceJob` you tell the scheduler to only run the latest encounter of the job sharing the same key.
 
+### Queue Job
+You can register your own queue with their defined concurrency and schedule on them `IQueueJob`.
 
 ## Usage
 
@@ -83,6 +85,42 @@ var taskScheduler = new MyTaskScheduler();
 
 // This way, this specific instance of the job will be run in your defined task scheduler
 scheduler.Start(new MyJob(), CancellationToken.None, taskScheduler);
+```
+
+### Queue usage
+```c#
+public class OneTimeQueueJob : IQueueJob
+{
+
+    public bool HasRun { get; set; }
+
+    public IRetryAction FailRule { get; } = new NoRetry();
+    public TimeSpan? MaxRuntime { get; }
+
+    public virtual async Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        HasRun = true;
+    }
+
+    public Task OnFailure(JobException exception)
+    {
+        return Task.CompletedTask;
+    }
+
+    //Unique key for this job. The queue won't accept twice the same job unless it has finished running.
+    public string Key { get; set; } = "test";
+    //Unique ID of the queue
+    public string QueueId { get; set; } = "test";
+  
+}
+var builder = new JobRunnerBuilder();
+var scheduler = new JobScheduler(builder);
+//queue with a maximum of 1 job running at a time
+var settings = new QueueSettings("test", 1);
+scheduler.RegisterQueue(settings);
+
+//Schedule the job as normal, it will be schedule in the queue
+scheduler.Start(new OneTimeQueueJob());
 ```
 ### Disposable
 If your job implement `IAsyncDisposable` the disposing will be called when the job has finished running.

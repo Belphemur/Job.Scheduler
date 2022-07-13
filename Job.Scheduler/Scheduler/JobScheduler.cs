@@ -8,6 +8,7 @@ using Job.Scheduler.Builder;
 using Job.Scheduler.Job;
 using Job.Scheduler.Job.Data;
 using Job.Scheduler.Job.Runner;
+using Job.Scheduler.Queue;
 
 namespace Job.Scheduler.Scheduler
 {
@@ -19,6 +20,7 @@ namespace Job.Scheduler.Scheduler
         private readonly ConcurrentDictionary<Guid, IJobRunner> _jobs = new();
         private readonly ConcurrentDictionary<string, Guid> _debouncedJobs = new();
         private readonly IJobRunnerBuilder _jobRunnerBuilder;
+        private readonly ConcurrentDictionary<string, Queue.Queue> _queues = new();
 
         internal class JobContainer : IContainerJob
         {
@@ -40,6 +42,26 @@ namespace Job.Scheduler.Scheduler
             _jobRunnerBuilder = jobRunnerBuilder;
         }
 
+
+        /// <summary>
+        /// Register a queue
+        /// </summary>
+        /// <param name="queueSettings"></param>
+        /// <exception cref="ArgumentException">Queue already exists</exception>
+        public void RegisterQueue(QueueSettings queueSettings)
+        {
+            if (!_queues.TryAdd(queueSettings.QueueId, new Queue.Queue(queueSettings, _jobRunnerBuilder)))
+            {
+                throw new ArgumentException($"Already have a queue registered with that Id: {queueSettings.QueueId}", nameof(queueSettings));
+            }
+        }
+
+        Queue.Queue IJobScheduler.GetQueue(string queueId)
+        {
+            _queues.TryGetValue(queueId, out var queue);
+            return queue;
+        }
+
         /// <summary>
         /// Schedule a new job to run through a container setup
         /// </summary>
@@ -49,7 +71,7 @@ namespace Job.Scheduler.Scheduler
         public JobId ScheduleJob(IContainerJob jobContainer, CancellationToken token = default, TaskScheduler taskScheduler = null)
         {
             var runner = ((IJobScheduler)this).ScheduleJobInternal(jobContainer, taskScheduler, token);
-            return new JobId(runner.UniqueId);
+            return runner == null ? new JobId() : new JobId(runner.UniqueId);
         }
 
         /// <summary>
@@ -83,6 +105,11 @@ namespace Job.Scheduler.Scheduler
         IJobRunner IJobScheduler.ScheduleJobInternal(IContainerJob jobContainer, TaskScheduler taskScheduler, CancellationToken token)
         {
             var job = jobContainer.Job;
+            if (job is IQueueJob queueJob)
+            {
+                return HandleQueueJobs(jobContainer, taskScheduler, queueJob.QueueId, token);
+            }
+
             var runner = _jobRunnerBuilder.Build(job, async jobRunner =>
             {
                 _jobs.TryRemove(jobRunner.UniqueId, out _);
@@ -105,13 +132,24 @@ namespace Job.Scheduler.Scheduler
             return runner;
         }
 
+        private IJobRunner HandleQueueJobs(IContainerJob jobContainer, TaskScheduler taskScheduler, string queueId, CancellationToken cancellationToken)
+        {
+            if (!_queues.TryGetValue(queueId, out var queue))
+            {
+                throw new ArgumentException($"Can't schedule job on a non registered queue: {queueId}. Use {nameof(RegisterQueue)} with your {nameof(QueueSettings)}.");
+            }
+
+            queue.AddJob(new QueueJobContainer(jobContainer, taskScheduler, cancellationToken));
+            return null;
+        }
+
         /// <summary>
         /// Stop the task and wait for it to terminate.
         /// Use the token to stop the task earlier
         /// </summary>
         public Task StopAsync(CancellationToken token = default)
         {
-            return Task.WhenAll(_jobs.Values.Select(runner => runner.StopAsync(token)));
+            return Task.WhenAll(_jobs.Values.Select(runner => runner.StopAsync(token)).Concat(_queues.Values.Select(queue => queue.StopAsync(token))));
         }
     }
 }
