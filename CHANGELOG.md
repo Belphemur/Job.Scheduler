@@ -1,3 +1,15 @@
+# [3.0.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.9.0...v3.0.0) (2022-10-04)
+
+
+### Features
+
+* **Scope:** Respect the scope of the job by building it on-demand and always rebuilding it for recurring jobs ([bd623f4](https://github.com/Belphemur/Job.Scheduler/commit/bd623f40825e048f75cb006b1564e40b43f0b6b1))
+
+
+### BREAKING CHANGES
+
+* **Scope:** The scheduling API is now type with generic. It shouldn't impact too much your code unless you've implemented your own IContainerJob which use a generic now.
+
 # [2.9.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.8.0...v2.9.0) (2022-07-13)
 
 
