@@ -16,7 +16,15 @@ public class JobSchedulerStartupConfig
         _jobBuilder = jobBuilder;
     }
 
-    private readonly List<IContainerJob> _jobs = new();
+    internal readonly List<IContainerJob<IQueueJob>> QueueJobs = new();
+    internal readonly List<IContainerJob<IJob>> OneTimeJobs = new();
+
+    internal readonly List<IContainerJob<IDebounceJob>> DebounceJobs = new();
+
+    internal readonly List<IContainerJob<IDelayedJob>> DelayedJobs = new();
+
+    internal readonly List<IContainerJob<IRecurringJob>> RecurringJobs = new();
+
     private readonly List<QueueSettings> _queueSettings = new();
 
     /// <summary>
@@ -24,9 +32,53 @@ public class JobSchedulerStartupConfig
     /// </summary>
     /// <param name="jobBuilder"></param>
     /// <returns></returns>
-    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IContainerJob> jobBuilder)
+    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IContainerJob<IQueueJob>> jobBuilder)
     {
-        _jobs.Add(jobBuilder(_jobBuilder));
+        QueueJobs.Add(jobBuilder(_jobBuilder));
+        return this;
+    }
+
+    /// <summary>
+    /// Add job that will be run at startup
+    /// </summary>
+    /// <param name="jobBuilder"></param>
+    /// <returns></returns>
+    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IContainerJob<IJob>> jobBuilder)
+    {
+        OneTimeJobs.Add(jobBuilder(_jobBuilder));
+        return this;
+    }
+
+    /// <summary>
+    /// Add job that will be run at startup
+    /// </summary>
+    /// <param name="jobBuilder"></param>
+    /// <returns></returns>
+    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IContainerJob<IDebounceJob>> jobBuilder)
+    {
+        DebounceJobs.Add(jobBuilder(_jobBuilder));
+        return this;
+    }
+
+    /// <summary>
+    /// Add job that will be run at startup
+    /// </summary>
+    /// <param name="jobBuilder"></param>
+    /// <returns></returns>
+    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IContainerJob<IDelayedJob>> jobBuilder)
+    {
+        DelayedJobs.Add(jobBuilder(_jobBuilder));
+        return this;
+    }
+
+    /// <summary>
+    /// Add job that will be run at startup
+    /// </summary>
+    /// <param name="jobBuilder"></param>
+    /// <returns></returns>
+    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IContainerJob<IRecurringJob>> jobBuilder)
+    {
+        RecurringJobs.Add(jobBuilder(_jobBuilder));
         return this;
     }
 
@@ -41,6 +93,5 @@ public class JobSchedulerStartupConfig
         return this;
     }
 
-    internal IEnumerable<IContainerJob> Jobs => _jobs;
     internal IEnumerable<QueueSettings> QueueSettings => _queueSettings;
 }

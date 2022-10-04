@@ -37,27 +37,21 @@ public class JobBuilder : IJobBuilder
         /// Build the <see cref="IJob"/>
         /// </summary>
         /// <returns></returns>
-        public IContainerJob Build()
+        public IContainerJob<T> Build()
         {
-            var job = _serviceScope.ServiceProvider.GetRequiredService<T>();
-            foreach (var action in _configurators)
-            {
-                action(job);
-            }
-
-            return new ScopedJobContainer(_serviceScope, job);
+            return new ScopedJobContainer<T>(_serviceScope, _configurators);
         }
     }
 
-    private class ScopedJobContainer : IContainerJob
+    private class ScopedJobContainer<TJob> : IContainerJob<TJob> where TJob : IJob
     {
         private readonly IServiceScope _serviceScope;
-        public IJob Job { get; }
+        private readonly List<Action<TJob>> _configurators;
 
-        public ScopedJobContainer(IServiceScope serviceScope, IJob job)
+        public ScopedJobContainer(IServiceScope serviceScope, List<Action<TJob>> configurators)
         {
             _serviceScope = serviceScope;
-            Job = job;
+            _configurators = configurators;
         }
 
         public Task OnCompletedAsync(CancellationToken token)
@@ -65,6 +59,19 @@ public class JobBuilder : IJobBuilder
             _serviceScope.Dispose();
             return Task.CompletedTask;
         }
+
+        public TJob BuildJob()
+        {
+            var job = _serviceScope.ServiceProvider.GetRequiredService<TJob>();
+            foreach (var action in _configurators)
+            {
+                action(job);
+            }
+
+            return job;
+        }
+
+        public Type JobType => typeof(TJob);
     }
 
     public Container<T> Create<T>() where T : IJob => new(_serviceProvider.CreateScope());

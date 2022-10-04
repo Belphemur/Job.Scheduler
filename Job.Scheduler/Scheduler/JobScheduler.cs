@@ -22,18 +22,25 @@ namespace Job.Scheduler.Scheduler
         private readonly IJobRunnerBuilder _jobRunnerBuilder;
         private readonly ConcurrentDictionary<string, Queue.Queue> _queues = new();
 
-        internal class JobContainer : IContainerJob
+        internal class JobContainer<TJob> : IContainerJob<TJob> where TJob : IJob
         {
-            public IJob Job { get; }
+            private readonly TJob _job;
+
+            public Type JobType => typeof(TJob);
 
             public Task OnCompletedAsync(CancellationToken token)
             {
                 return Task.CompletedTask;
             }
 
-            public JobContainer(IJob job)
+            public TJob BuildJob()
             {
-                Job = job;
+                return _job;
+            }
+
+            public JobContainer(TJob job)
+            {
+                _job = job;
             }
         }
 
@@ -68,7 +75,7 @@ namespace Job.Scheduler.Scheduler
         /// <param name="jobContainer">The container of the job to run</param>
         /// <param name="token">If you want to cancel easily this specific job later. Default = None</param>
         /// <param name="taskScheduler">In which TaskScheduler should the job be run. Default = TaskScheduler.Default</param>
-        public JobId ScheduleJob(IContainerJob jobContainer, CancellationToken token = default, TaskScheduler taskScheduler = null)
+        public JobId ScheduleJob<TJob>(IContainerJob<TJob> jobContainer, CancellationToken token = default, TaskScheduler taskScheduler = null) where TJob : IJob
         {
             var runner = ((IJobScheduler)this).ScheduleJobInternal(jobContainer, taskScheduler, token);
             return runner == null ? new JobId() : new JobId(runner.UniqueId);
@@ -80,8 +87,7 @@ namespace Job.Scheduler.Scheduler
         /// <param name="job">The job to run</param>
         /// <param name="token">If you want to cancel easily this specific job later. Default = None</param>
         /// <param name="taskScheduler">In which TaskScheduler should the job be run. Default = TaskScheduler.Default</param>
-        public JobId ScheduleJob(IJob job, CancellationToken token = default, TaskScheduler taskScheduler = null)
-            => ScheduleJob(new JobContainer(job), token, taskScheduler);
+        public JobId ScheduleJob<TJob>(TJob job, CancellationToken token = default, TaskScheduler taskScheduler = null) where TJob : IJob => ScheduleJob(new JobContainer<TJob>(job), token, taskScheduler);
 
         /// <summary>
         /// Stop the given job
@@ -102,22 +108,23 @@ namespace Job.Scheduler.Scheduler
         /// </summary>
         public bool HasJob(JobId jobId) => _jobs.TryGetValue(jobId.UniqueId, out _);
 
-        IJobRunner IJobScheduler.ScheduleJobInternal(IContainerJob jobContainer, TaskScheduler taskScheduler, CancellationToken token)
+        IJobRunner IJobScheduler.ScheduleJobInternal<TJob>(IContainerJob<TJob> jobContainer, TaskScheduler taskScheduler, CancellationToken token)
         {
-            var job = jobContainer.Job;
-            if (job is IQueueJob queueJob)
+            if (jobContainer is IContainerJob<IQueueJob> queueJobContainer)
             {
-                return HandleQueueJobs(jobContainer, taskScheduler, queueJob.QueueId, token);
+                return HandleQueueJobs(queueJobContainer, taskScheduler, queueJobContainer.BuildJob().QueueId, token);
             }
 
-            var runner = _jobRunnerBuilder.Build(job, async jobRunner =>
+
+            var runner = _jobRunnerBuilder.Build(jobContainer, async jobRunner =>
             {
                 _jobs.TryRemove(jobRunner.UniqueId, out _);
                 await jobContainer.OnCompletedAsync(token);
             }, taskScheduler);
             _jobs.TryAdd(runner.UniqueId, runner);
-            if (job is IDebounceJob debounceJob)
+            if (jobContainer is IContainerJob<IDebounceJob> debounceContainer)
             {
+                var debounceJob = debounceContainer.BuildJob();
                 if (_debouncedJobs.TryGetValue(debounceJob.Key, out var guid))
                 {
                     //Job could have ended and not be available to be removed anymore
@@ -132,7 +139,7 @@ namespace Job.Scheduler.Scheduler
             return runner;
         }
 
-        private IJobRunner HandleQueueJobs(IContainerJob jobContainer, TaskScheduler taskScheduler, string queueId, CancellationToken cancellationToken)
+        private IJobRunner HandleQueueJobs(IContainerJob<IQueueJob> jobContainer, TaskScheduler taskScheduler, string queueId, CancellationToken cancellationToken)
         {
             if (!_queues.TryGetValue(queueId, out var queue))
             {

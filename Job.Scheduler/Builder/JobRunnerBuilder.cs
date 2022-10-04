@@ -20,25 +20,28 @@ namespace Job.Scheduler.Builder
         {
             var jobRunnerType = typeof(IJobRunner);
             _jobTypeToRunnerTypeDictionary = jobRunnerType.Assembly.GetTypes()
-                .Where(type => type.IsClass && !type.IsAbstract)
-                .Where(type => jobRunnerType.IsAssignableFrom(type) && type.BaseType?.IsAbstract == true)
-                .ToDictionary(type => type.BaseType.GetGenericArguments().First());
+                                                          .Where(type => type.IsClass && !type.IsAbstract)
+                                                          .Where(type => jobRunnerType.IsAssignableFrom(type) && type.BaseType?.IsAbstract == true)
+                                                          .ToDictionary(type => type.BaseType.GetGenericArguments().First());
         }
 
         /// <summary>
         /// Build a Job runner for the given job
         /// </summary>
-        public IJobRunner Build(IJob job, Func<IJobRunner, Task> jobDone, TaskScheduler taskScheduler)
+        public IJobRunner Build<TJob>(IContainerJob<TJob> job, Func<IJobRunner, Task> jobDone, TaskScheduler taskScheduler) where TJob : IJob
         {
-            var mainTypeJob = job.GetType();
-            if (!_jobToRunner.TryGetValue(mainTypeJob, out var runner))
+            var mainTypeJob = job.JobType;
+
+            _jobTypeToRunnerTypeDictionary.TryGetValue(mainTypeJob, out var runner);
+
+            if (runner == null && !_jobToRunner.TryGetValue(mainTypeJob, out runner))
             {
                 var typeOfJob = mainTypeJob.GetInterfaces().Intersect(_jobTypeToRunnerTypeDictionary.Keys).First();
                 runner = _jobTypeToRunnerTypeDictionary[typeOfJob];
                 _jobToRunner.TryAdd(mainTypeJob, runner);
             }
 
-            return (IJobRunner) Activator.CreateInstance(runner, job, jobDone, taskScheduler);
+            return (IJobRunner)Activator.CreateInstance(runner, job, jobDone, taskScheduler);
         }
     }
 }

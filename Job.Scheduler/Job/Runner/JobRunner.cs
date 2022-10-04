@@ -13,10 +13,10 @@ namespace Job.Scheduler.Job.Runner
     /// <summary>
     /// Base implementation of <see cref="IJobRunner"/>
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    internal abstract class JobRunner<T> : IJobRunner where T : IJob
+    /// <typeparam name="TJob"></typeparam>
+    internal abstract class JobRunner<TJob> : IJobRunner where TJob : IJob
     {
-        protected readonly T _job;
+        protected readonly IContainerJob<TJob> _jobContainer;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
         private Task _runningTaskWithDone;
@@ -34,13 +34,13 @@ namespace Job.Scheduler.Job.Runner
         public TimeSpan Elapsed => _stopwatch.Elapsed;
         public int Retries { get; private set; }
 
-        public Type JobType => typeof(T);
+        public Type JobType => typeof(TJob);
         public virtual string Key => UniqueId.ToString();
 
 
-        protected JobRunner(T job, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler)
+        protected JobRunner(IContainerJob<TJob> jobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler)
         {
-            _job = job;
+            _jobContainer = jobContainer;
             _jobDone = jobDone;
             _taskScheduler = taskScheduler;
         }
@@ -48,7 +48,7 @@ namespace Job.Scheduler.Job.Runner
         /// <summary>
         /// Start the job
         /// </summary>
-        protected abstract Task StartJobAsync(T job, CancellationToken token);
+        protected abstract Task StartJobAsync(IContainerJob<TJob> jobContainer, CancellationToken token);
 
         /// <summary>
         /// Run the job
@@ -65,12 +65,12 @@ namespace Job.Scheduler.Job.Runner
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
             _runningTask = _taskScheduler == null
-                ? StartJobAsync(_job, _cancellationTokenSource.Token)
-                : Task.Factory.StartNew(_ => StartJobAsync(_job, _cancellationTokenSource.Token), null, _cancellationTokenSource.Token, TaskCreationOptions.None, _taskScheduler).Unwrap();
+                ? StartJobAsync(_jobContainer, _cancellationTokenSource.Token)
+                : Task.Factory.StartNew(_ => StartJobAsync(_jobContainer, _cancellationTokenSource.Token), null, _cancellationTokenSource.Token, TaskCreationOptions.None, _taskScheduler).Unwrap();
 
             _runningTaskWithDone = _runningTask.ContinueWith(async _ =>
             {
-                if (_job is IAsyncDisposable asyncDisposable)
+                if (_jobContainer is IAsyncDisposable asyncDisposable)
                 {
                     await asyncDisposable.DisposeAsync();
                 }
@@ -114,7 +114,7 @@ namespace Job.Scheduler.Job.Runner
         /// <exception cref="JobException"></exception>
         protected async Task InnerExecuteJob(IJob job, CancellationToken cancellationToken)
         {
-            using var maxRuntimeCts = _job.MaxRuntime.HasValue ? new CancellationTokenSource(_job.MaxRuntime.Value) : new CancellationTokenSource();
+            using var maxRuntimeCts = job.MaxRuntime.HasValue ? new CancellationTokenSource(job.MaxRuntime.Value) : new CancellationTokenSource();
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, maxRuntimeCts.Token);
             var runtimeMaxLinkedToken = linkedCts.Token;
             _stopwatch.Restart();
