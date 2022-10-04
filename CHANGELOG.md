@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/Belphemur/Job.Scheduler/compare/v3.0.0...v3.0.1) (2022-10-04)
+
+
+### Bug Fixes
+
+* **Scope:** Be sure to register job as transient ([dac2828](https://github.com/Belphemur/Job.Scheduler/commit/dac2828d45218a88ff851f808786ac4b839917d5))
+
 # [3.0.0](https://github.com/Belphemur/Job.Scheduler/compare/v2.9.0...v3.0.0) (2022-10-04)
 
 
