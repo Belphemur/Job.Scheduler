@@ -27,7 +27,27 @@ public class JobSchedulerHostedService : IHostedService
             _jobScheduler.RegisterQueue(queueSetting);
         }
 
-        foreach (var containerJob in _config.Jobs)
+        foreach (var containerJob in _config.QueueJobs)
+        {
+            _jobScheduler.ScheduleJob(containerJob, cancellationToken);
+        }
+
+        foreach (var containerJob in _config.DebounceJobs)
+        {
+            _jobScheduler.ScheduleJob(containerJob, cancellationToken);
+        }
+
+        foreach (var containerJob in _config.DelayedJobs)
+        {
+            _jobScheduler.ScheduleJob(containerJob, cancellationToken);
+        }
+
+        foreach (var containerJob in _config.RecurringJobs)
+        {
+            _jobScheduler.ScheduleJob(containerJob, cancellationToken);
+        }
+
+        foreach (var containerJob in _config.OneTimeJobs)
         {
             _jobScheduler.ScheduleJob(containerJob, cancellationToken);
         }

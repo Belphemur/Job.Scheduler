@@ -44,11 +44,12 @@ internal class Queue
         }
 
         var container = queueJobContainer.Container;
-        if (container.Job is not IQueueJob job)
+        if (container is not IContainerJob<IQueueJob>)
         {
             throw new ArgumentException($"Can only queue job that are of type {nameof(IQueueJob)}");
         }
 
+        var job = container.BuildJob();
         if (job.QueueId != _settings.QueueId)
         {
             throw new ArgumentException($"Can't schedule a job with wrong queueID. Expected {_settings.QueueId} got {job.QueueId}", nameof(queueJobContainer));
@@ -87,7 +88,7 @@ internal class Queue
 
     private void ScheduleJob(QueueJobContainer containerJob)
     {
-        var jobRunner = _jobRunnerBuilder.Build(containerJob.Container.Job, async runner =>
+        var jobRunner = _jobRunnerBuilder.Build(containerJob.Container, async runner =>
         {
             _runningJobs.TryRemove(runner.UniqueId, out _);
             await containerJob.Container.OnCompletedAsync(containerJob.Token);

@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
 
         <IsPackable>false</IsPackable>
     </PropertyGroup>
@@ -15,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Job.Scheduler\Job.Scheduler.csproj" />
+      <ProjectReference Include="..\Job.Scheduler.AspNetCore\Job.Scheduler.AspNetCore.csproj" />
     </ItemGroup>
 
 </Project>

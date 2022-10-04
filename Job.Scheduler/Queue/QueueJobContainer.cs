@@ -4,7 +4,7 @@ using Job.Scheduler.Job;
 
 namespace Job.Scheduler.Queue;
 
-internal record QueueJobContainer(IContainerJob Container, TaskScheduler TaskScheduler, CancellationToken Token)
+internal record QueueJobContainer(IContainerJob<IQueueJob> Container, TaskScheduler TaskScheduler, CancellationToken Token)
 {
-    public string Key => ((IQueueJob)Container.Job).Key;
+    public string Key => Container.BuildJob().Key;
 }

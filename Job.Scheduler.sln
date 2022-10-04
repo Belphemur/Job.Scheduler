@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Job.Scheduler.Tests", "Job.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Job.Scheduler.AspNetCore", "Job.Scheduler.AspNetCore\Job.Scheduler.AspNetCore.csproj", "{284EA199-B357-4C25-B551-2ABF68ED5D70}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Job.Scheduler.AspNetCore.Tests", "Job.Scheduler.AspNetCore.Tests\Job.Scheduler.AspNetCore.Tests.csproj", "{F224EA1E-F83F-4EDE-84D3-2A258C7E1E14}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{284EA199-B357-4C25-B551-2ABF68ED5D70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{284EA199-B357-4C25-B551-2ABF68ED5D70}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{284EA199-B357-4C25-B551-2ABF68ED5D70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F224EA1E-F83F-4EDE-84D3-2A258C7E1E14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F224EA1E-F83F-4EDE-84D3-2A258C7E1E14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F224EA1E-F83F-4EDE-84D3-2A258C7E1E14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F224EA1E-F83F-4EDE-84D3-2A258C7E1E14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
