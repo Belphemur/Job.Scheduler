@@ -29,5 +29,9 @@
         <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
         <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.0" />
     </ItemGroup>
-
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>Job.Scheduler.Tests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
 </Project>

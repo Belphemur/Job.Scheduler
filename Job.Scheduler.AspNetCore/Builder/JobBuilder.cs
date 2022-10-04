@@ -43,7 +43,7 @@ public class JobBuilder : IJobBuilder
         }
     }
 
-    private class ScopedJobContainer<TJob> : IContainerJob<TJob> where TJob : IJob
+    internal class ScopedJobContainer<TJob> : IContainerJob<TJob> where TJob : IJob
     {
         private readonly IServiceScope _serviceScope;
         private readonly List<Action<TJob>> _configurators;

@@ -20,14 +20,13 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IJobRunnerBuilder, JobRunnerBuilder>();
         services.AddSingleton<IJobScheduler, JobScheduler>();
-        services.AddSingleton<JobSchedulerStartupConfig>();
-        services.AddHostedService(provider =>
+        services.AddSingleton(provider =>
         {
-            var jobScheduler = provider.GetRequiredService<IJobScheduler>();
-            var configuration = provider.GetRequiredService<JobSchedulerStartupConfig>();
-            config?.Invoke(configuration);
-            return new JobSchedulerHostedService(jobScheduler, configuration);
+            var startupConfig = new JobSchedulerStartupConfig(provider.GetRequiredService<IJobBuilder>());
+            config?.Invoke(startupConfig);
+            return startupConfig;
         });
+        services.AddHostedService<JobSchedulerHostedService>();
         services.AddSingleton<IJobBuilder, JobBuilder>();
 
         return services;
