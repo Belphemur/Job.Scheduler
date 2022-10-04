@@ -40,7 +40,7 @@ public static class ServiceCollectionExtensions
     /// <returns></returns>
     public static IServiceCollection AddJob<T>(this IServiceCollection services) where T : IJob
     {
-        services.AddScoped(typeof(T));
+        services.AddTransient(typeof(T));
         return services;
     }
 }
