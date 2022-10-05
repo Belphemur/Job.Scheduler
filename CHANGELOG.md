@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/Belphemur/Job.Scheduler/compare/v3.0.1...v3.0.2) (2022-10-05)
+
+
+### Bug Fixes
+
+* **Scope:** Fix issue with scope being discarded and we still need access to the JobKey ([55a495f](https://github.com/Belphemur/Job.Scheduler/commit/55a495f65bb73274786c1d9ffc8f913abf8cc12a))
+
 ## [3.0.1](https://github.com/Belphemur/Job.Scheduler/compare/v3.0.0...v3.0.1) (2022-10-04)
 
 
