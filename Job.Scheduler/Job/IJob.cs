@@ -65,15 +65,21 @@ namespace Job.Scheduler.Job
     }
 
     /// <summary>
-    /// Job executed once per <see cref="DebounceTime"/> per <see cref="Key"/>
+    /// Represent the usage of a key
     /// </summary>
-    public interface IDebounceJob : IJob
+    public interface HasKey
     {
         /// <summary>
         /// UniqueID of the job
         /// </summary>
-        public string Key { get; }
+        string Key { get; }
+    }
 
+    /// <summary>
+    /// Job executed once per <see cref="DebounceTime"/> per <see cref="Key"/>
+    /// </summary>
+    public interface IDebounceJob : IJob, HasKey
+    {
         /// <summary>
         /// Delay to wait to execute the job, to be sure there isn't any other job of the same type scheduled
         /// </summary>
@@ -83,12 +89,8 @@ namespace Job.Scheduler.Job
     /// <summary>
     /// A job that is queued and follow the setting of the queue to be run
     /// </summary>
-    public interface IQueueJob : IJob
+    public interface IQueueJob : IJob, HasKey
     {
-        /// <summary>
-        /// UniqueID of the job
-        /// </summary>
-        public string Key { get; }
 
         /// <summary>
         /// UniqueID of the queue where the job is run

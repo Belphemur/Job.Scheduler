@@ -40,6 +40,7 @@ public class Tests
     [Test]
     public void TestJobConfig()
     {
+        _services.AddJob<OneTimeJob>();
         _services.AddJobScheduler(config => { config.AddStartupJob(builder => builder.Create<OneTimeJob>().Build()); });
         var container = _services.BuildServiceProvider();
 

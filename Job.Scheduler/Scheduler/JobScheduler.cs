@@ -27,6 +27,8 @@ namespace Job.Scheduler.Scheduler
             private readonly TJob _job;
 
             public Type JobType => typeof(TJob);
+            public string Key { get; }
+            public string QueueId { get; }
 
             public Task OnCompletedAsync(CancellationToken token)
             {
@@ -41,6 +43,8 @@ namespace Job.Scheduler.Scheduler
             public JobContainer(TJob job)
             {
                 _job = job;
+                Key = _job is HasKey keyed ? keyed.Key : Guid.NewGuid().ToString();
+                QueueId = _job is IQueueJob queueJob ? queueJob.QueueId : null;
             }
         }
 

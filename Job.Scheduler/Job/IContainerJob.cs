@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
+#nullable enable
 namespace Job.Scheduler.Job;
 
 /// <summary>
@@ -26,4 +28,14 @@ public interface IContainerJob<out TJob>
     /// Type of the contained job
     /// </summary>
     public Type JobType { get; }
+    
+    /// <summary>
+    /// Key of the job
+    /// </summary>
+    public string Key { get; }
+    
+    /// <summary>
+    /// Id of queue if present
+    /// </summary>
+    public string? QueueId { get; }
 }

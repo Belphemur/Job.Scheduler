@@ -52,6 +52,9 @@ public class JobBuilder : IJobBuilder
         {
             _serviceScope = serviceScope;
             _configurators = configurators;
+            var job = BuildJob();
+            Key = job is HasKey keyed ? keyed.Key : Guid.NewGuid().ToString();
+            QueueId = job is IQueueJob queueJob ? queueJob.QueueId : null;
         }
 
         public Task OnCompletedAsync(CancellationToken token)
@@ -72,6 +75,8 @@ public class JobBuilder : IJobBuilder
         }
 
         public Type JobType => typeof(TJob);
+        public string Key { get; }
+        public string? QueueId { get; }
     }
 
     public Container<T> Create<T>() where T : IJob => new(_serviceProvider.CreateScope());

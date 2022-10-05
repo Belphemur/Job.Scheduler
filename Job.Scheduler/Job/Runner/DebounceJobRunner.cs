@@ -12,7 +12,7 @@ namespace Job.Scheduler.Job.Runner
         {
         }
 
-        public override string Key => _jobContainer.BuildJob().Key;
+        public override string Key => _jobContainer.Key;
 
         protected override async Task StartJobAsync(IContainerJob<IDebounceJob> jobContainer, CancellationToken token)
         {
