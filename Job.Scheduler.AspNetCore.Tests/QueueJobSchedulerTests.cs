@@ -12,35 +12,36 @@ using Microsoft.Extensions.Hosting;
 
 namespace Job.Scheduler.AspNetCore.Tests;
 
-[Parallelizable(ParallelScope.Children)]
 [TestFixture]
 public class QueueJobSchedulerTests
 {
     private ServiceCollection _services;
     private QueueSettings _settings;
     private JobSchedulerHostedService _jobSchedulerHostedService;
+    private ServiceProvider _provider;
 
-    [SetUp]
+    [OneTimeSetUp]
     public async Task Setup()
     {
         _services = new ServiceCollection();
         _settings = new QueueSettings("test", 1);
         _services.AddJobScheduler(config => { config.RegisterQueue(_settings); })
                  .AddJob<OneTimeQueueJob>();
-        
+
+        _provider = await GetProvider();
     }
 
-    [TearDown]
+    [OneTimeTearDown]
     public async Task TearDown()
     {
         await _jobSchedulerHostedService.StopAsync(CancellationToken.None);
+        await _provider.DisposeAsync();
     }
 
     [Test]
     public async Task AddJobToQueue()
     {
-        var provider = await GetProvider();
-        var builder = provider.GetRequiredService<IJobBuilder>();
+        var builder = _provider.GetRequiredService<IJobBuilder>();
         var runState = new OneTimeQueueJob.RunStateInfo();
         var job = builder.Create<OneTimeQueueJob>()
                          .Configure(queueJob =>
@@ -51,7 +52,7 @@ public class QueueJobSchedulerTests
                          })
                          .Build();
 
-        var scheduler = provider.GetRequiredService<IJobScheduler>();
+        var scheduler = _provider.GetRequiredService<IJobScheduler>();
 
         var queue = scheduler.GetQueue(_settings.QueueId);
         scheduler.ScheduleJob(job);
@@ -75,12 +76,10 @@ public class QueueJobSchedulerTests
     [Test]
     public async Task AddMultipleJobQueue()
     {
-        var provider = await GetProvider();
-
-        var builder = provider.GetRequiredService<IJobBuilder>();
+        var builder = _provider.GetRequiredService<IJobBuilder>();
         var runState = new OneTimeQueueJob.RunStateInfo();
-        
-        var scheduler = provider.GetRequiredService<IJobScheduler>();
+
+        var scheduler = _provider.GetRequiredService<IJobScheduler>();
 
         var queue = scheduler.GetQueue(_settings.QueueId);
         for (var i = 0; i < 5; i++)
