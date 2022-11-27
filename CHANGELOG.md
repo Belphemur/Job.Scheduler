@@ -1,3 +1,10 @@
+## [3.1.1](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.0...v3.1.1) (2022-11-27)
+
+
+### Bug Fixes
+
+* **Scope::Dispose:** Fix issue where we dispose the scope too early ([f23e9ae](https://github.com/Belphemur/Job.Scheduler/commit/f23e9ae05a339e77b95aec93e6539e5040f7ecf3))
+
 # [3.1.0](https://github.com/Belphemur/Job.Scheduler/compare/v3.0.2...v3.1.0) (2022-11-27)
 
 
