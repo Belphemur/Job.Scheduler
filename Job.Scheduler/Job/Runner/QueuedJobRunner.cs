@@ -11,10 +11,10 @@ internal class QueuedJobRunner : JobRunner<IQueueJob>
     {
     }
 
-    protected override Task StartJobAsync(IJobContainerBuilder<IQueueJob> builderJobContainer, CancellationToken token)
+    protected override async Task StartJobAsync(IJobContainerBuilder<IQueueJob> builderJobContainer, CancellationToken token)
     {
         using var jobContainer = builderJobContainer.BuildJob();
         var job = jobContainer.Job;
-        return InnerExecuteJob(job, token);
+        await InnerExecuteJob(job, token);
     }
 }
