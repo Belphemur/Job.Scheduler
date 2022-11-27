@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/Belphemur/Job.Scheduler/compare/v3.0.2...v3.1.0) (2022-11-27)
+
+
+### Features
+
+* **Scope:** Create a new scope every time we build a job ([6ae54b8](https://github.com/Belphemur/Job.Scheduler/commit/6ae54b85922af76d165fa8c8882c0cf16c8ef199))
+
 ## [3.0.2](https://github.com/Belphemur/Job.Scheduler/compare/v3.0.1...v3.0.2) (2022-10-05)
 
 
