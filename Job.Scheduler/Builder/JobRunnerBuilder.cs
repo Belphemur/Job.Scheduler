@@ -28,9 +28,9 @@ namespace Job.Scheduler.Builder
         /// <summary>
         /// Build a Job runner for the given job
         /// </summary>
-        public IJobRunner Build<TJob>(IContainerJob<TJob> job, Func<IJobRunner, Task> jobDone, TaskScheduler taskScheduler) where TJob : IJob
+        public IJobRunner Build<TJob>(IJobContainerBuilder<TJob> builder, Func<IJobRunner, Task> jobDone, TaskScheduler taskScheduler) where TJob : IJob
         {
-            var mainTypeJob = job.JobType;
+            var mainTypeJob = builder.JobType;
 
             _jobTypeToRunnerTypeDictionary.TryGetValue(mainTypeJob, out var runner);
 
@@ -41,7 +41,7 @@ namespace Job.Scheduler.Builder
                 _jobToRunner.TryAdd(mainTypeJob, runner);
             }
 
-            return (IJobRunner)Activator.CreateInstance(runner, job, jobDone, taskScheduler);
+            return (IJobRunner)Activator.CreateInstance(runner, builder, jobDone, taskScheduler);
         }
     }
 }

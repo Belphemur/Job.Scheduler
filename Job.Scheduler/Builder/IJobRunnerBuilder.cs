@@ -10,6 +10,6 @@ namespace Job.Scheduler.Builder
         /// <summary>
         /// Build a Job runner for the given job
         /// </summary>
-        IJobRunner Build<TJob>(IContainerJob<TJob> job, Func<IJobRunner, Task> jobDone, TaskScheduler taskScheduler) where TJob : IJob;
+        IJobRunner Build<TJob>(IJobContainerBuilder<TJob> builder, Func<IJobRunner, Task> jobDone, TaskScheduler taskScheduler) where TJob : IJob;
     }
 }

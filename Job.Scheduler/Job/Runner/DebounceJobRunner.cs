@@ -8,15 +8,16 @@ namespace Job.Scheduler.Job.Runner
 {
     internal class DebounceJobRunner : JobRunner<IDebounceJob>
     {
-        public DebounceJobRunner(IContainerJob<IDebounceJob> jobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(jobContainer, jobDone, taskScheduler)
+        public DebounceJobRunner(IJobContainerBuilder<IDebounceJob> builderJobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
         {
         }
 
-        public override string Key => _jobContainer.Key;
+        public override string Key => BuilderJobContainer.Key;
 
-        protected override async Task StartJobAsync(IContainerJob<IDebounceJob> jobContainer, CancellationToken token)
+        protected override async Task StartJobAsync(IJobContainerBuilder<IDebounceJob> builderJobContainer, CancellationToken token)
         {
-            var job = jobContainer.BuildJob();
+            using var jobContainer = builderJobContainer.BuildJob();
+            var job = jobContainer.Job;
             await TaskUtils.WaitForDelayOrCancellation(job.DebounceTime, token);
             if (token.IsCancellationRequested)
             {

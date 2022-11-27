@@ -7,13 +7,14 @@ namespace Job.Scheduler.Job.Runner
 {
     internal class OneTimeJobRunner : JobRunner<IJob>
     {
-        public OneTimeJobRunner(IContainerJob<IJob> jobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(jobContainer, jobDone, taskScheduler)
+        public OneTimeJobRunner(IJobContainerBuilder<IJob> builderJobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
         {
         }
 
-        protected override Task StartJobAsync(IContainerJob<IJob> jobContainer, CancellationToken token)
+        protected override Task StartJobAsync(IJobContainerBuilder<IJob> builderJobContainer, CancellationToken token)
         {
-            var job = jobContainer.BuildJob();
+            using var jobContainer = builderJobContainer.BuildJob();
+            var job = jobContainer.Job;
             return InnerExecuteJob(job, token);
         }
         

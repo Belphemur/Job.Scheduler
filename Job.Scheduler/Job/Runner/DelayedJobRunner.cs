@@ -8,13 +8,14 @@ namespace Job.Scheduler.Job.Runner
 {
     internal class DelayedJobRunner : JobRunner<IDelayedJob>
     {
-        public DelayedJobRunner(IContainerJob<IDelayedJob> jobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(jobContainer, jobDone, taskScheduler)
+        public DelayedJobRunner(IJobContainerBuilder<IDelayedJob> builderJobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
         {
         }
 
-        protected override async Task StartJobAsync(IContainerJob<IDelayedJob> jobContainer, CancellationToken token)
+        protected override async Task StartJobAsync(IJobContainerBuilder<IDelayedJob> builderJobContainer, CancellationToken token)
         {
-            var job = jobContainer.BuildJob();
+            using var jobContainer = builderJobContainer.BuildJob();
+            var job = jobContainer.Job;
             await TaskUtils.WaitForDelayOrCancellation(job.Delay, token);
             if (token.IsCancellationRequested)
             {

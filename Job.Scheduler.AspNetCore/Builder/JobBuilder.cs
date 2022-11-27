@@ -14,12 +14,12 @@ public class JobBuilder : IJobBuilder
 
     public class Container<T> where T : IJob
     {
-        private readonly IServiceScope _serviceScope;
+        private readonly IServiceProvider _serviceProvider;
         private readonly List<Action<T>> _configurators = new();
 
-        public Container(IServiceScope serviceScope)
+        public Container(IServiceProvider serviceProvider)
         {
-            _serviceScope = serviceScope;
+            _serviceProvider = serviceProvider;
         }
 
         /// <summary>
@@ -37,41 +37,75 @@ public class JobBuilder : IJobBuilder
         /// Build the <see cref="IJob"/>
         /// </summary>
         /// <returns></returns>
-        public IContainerJob<T> Build()
+        public IJobContainerBuilder<T> Build()
         {
-            return new ScopedJobContainer<T>(_serviceScope, _configurators);
+            return new ScopedBuilderJobContainer<T>(_serviceProvider, _configurators);
         }
     }
 
-    internal class ScopedJobContainer<TJob> : IContainerJob<TJob> where TJob : IJob
+    internal class ScopedJobContainer<TJob> : IJobContainer<TJob> where TJob : IJob
     {
         private readonly IServiceScope _serviceScope;
-        private readonly List<Action<TJob>> _configurators;
+        private bool _isDisposed;
 
-        public ScopedJobContainer(IServiceScope serviceScope, List<Action<TJob>> configurators)
+        public ScopedJobContainer(TJob job, IServiceScope serviceScope)
         {
             _serviceScope = serviceScope;
+            Job = job;
+        }
+
+        public void Dispose()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            _serviceScope.Dispose();
+            _isDisposed = true;
+        }
+
+        public TJob Job { get; }
+    }
+
+    internal class ScopedBuilderJobContainer<TJob> : IJobContainerBuilder<TJob> where TJob : IJob
+    {
+        private readonly IServiceProvider _serviceProvider;
+        private readonly List<Action<TJob>> _configurators;
+        private readonly List<IJobContainer<TJob>> _jobBuilt = new();
+
+        public ScopedBuilderJobContainer(IServiceProvider serviceProvider, List<Action<TJob>> configurators)
+        {
+            _serviceProvider = serviceProvider;
             _configurators = configurators;
-            var job = BuildJob();
+            using var jobContainer = BuildJob();
+            var job = jobContainer.Job;
             Key = job is HasKey keyed ? keyed.Key : Guid.NewGuid().ToString();
             QueueId = job is IQueueJob queueJob ? queueJob.QueueId : null;
         }
 
         public Task OnCompletedAsync(CancellationToken token)
         {
-            _serviceScope.Dispose();
+            foreach (var container in _jobBuilt)
+            {
+                container.Dispose();
+            }
+            _configurators.Clear();
+            _jobBuilt.Clear();
             return Task.CompletedTask;
         }
 
-        public TJob BuildJob()
+        public IJobContainer<TJob> BuildJob()
         {
-            var job = _serviceScope.ServiceProvider.GetRequiredService<TJob>();
+            var serviceScope = _serviceProvider.CreateScope();
+            var job = serviceScope.ServiceProvider.GetRequiredService<TJob>();
             foreach (var action in _configurators)
             {
                 action(job);
             }
 
-            return job;
+            var scopedJobContainer = new ScopedJobContainer<TJob>(job, serviceScope);
+            _jobBuilt.Add(scopedJobContainer);
+            return scopedJobContainer;
         }
 
         public Type JobType => typeof(TJob);
@@ -79,5 +113,5 @@ public class JobBuilder : IJobBuilder
         public string? QueueId { get; }
     }
 
-    public Container<T> Create<T>() where T : IJob => new(_serviceProvider.CreateScope());
+    public Container<T> Create<T>() where T : IJob => new(_serviceProvider);
 }

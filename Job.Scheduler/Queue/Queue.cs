@@ -44,7 +44,7 @@ internal class Queue
             return false;
         }
 
-        var container = queueJobContainer.Container;
+        var container = queueJobContainer.JobContainer;
         if (container.QueueId != Settings.QueueId)
         {
             throw new ArgumentException($"Can't schedule a job with wrong queueID. Expected {Settings.QueueId} got {container.QueueId}", nameof(queueJobContainer));
@@ -84,11 +84,11 @@ internal class Queue
 
     private void ScheduleJob(QueueJobContainer containerJob)
     {
-        var jobRunner = _jobRunnerBuilder.Build(containerJob.Container, async runner =>
+        var jobRunner = _jobRunnerBuilder.Build(containerJob.JobContainer, async runner =>
         {
             try
             {
-                await containerJob.Container.OnCompletedAsync(containerJob.Token);
+                await containerJob.JobContainer.OnCompletedAsync(containerJob.Token);
             }
             finally
             {

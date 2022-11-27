@@ -8,15 +8,16 @@ namespace Job.Scheduler.Job.Runner
 {
     internal class RecurringJobRunner : JobRunner<IRecurringJob>
     {
-        public RecurringJobRunner(IContainerJob<IRecurringJob> jobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(jobContainer, jobDone, taskScheduler)
+        public RecurringJobRunner(IJobContainerBuilder<IRecurringJob> builderJobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
         {
         }
 
-        protected override async Task StartJobAsync(IContainerJob<IRecurringJob> jobContainer, CancellationToken token)
+        protected override async Task StartJobAsync(IJobContainerBuilder<IRecurringJob> builderJobContainer, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
-                var job = jobContainer.BuildJob();
+                using var jobContainer = builderJobContainer.BuildJob();
+                var job = jobContainer.Job;
                 await InnerExecuteJob(job, token);
 
                 await TaskUtils.WaitForDelayOrCancellation(job.Delay, token);
