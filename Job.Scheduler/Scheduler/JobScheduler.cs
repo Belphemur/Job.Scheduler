@@ -22,9 +22,23 @@ namespace Job.Scheduler.Scheduler
         private readonly IJobRunnerBuilder _jobRunnerBuilder;
         private readonly ConcurrentDictionary<string, Queue.Queue> _queues = new();
 
-        internal class JobContainer<TJob> : IContainerJob<TJob> where TJob : IJob
+        internal class BuilderJobContainer<TJob> : IJobContainerBuilder<TJob> where TJob : IJob
         {
+            internal class JobContainer : IJobContainer<TJob>
+            {
+                public JobContainer(TJob job)
+                {
+                    Job = job;
+                }
+
+                public void Dispose()
+                {
+                }
+
+                public TJob Job { get; }
+            }
             private readonly TJob _job;
+            
 
             public Type JobType => typeof(TJob);
             public string Key { get; }
@@ -35,12 +49,12 @@ namespace Job.Scheduler.Scheduler
                 return Task.CompletedTask;
             }
 
-            public TJob BuildJob()
+            public IJobContainer<TJob> BuildJob()
             {
-                return _job;
+                return new JobContainer(_job);
             }
 
-            public JobContainer(TJob job)
+            public BuilderJobContainer(TJob job)
             {
                 _job = job;
                 Key = _job is HasKey keyed ? keyed.Key : Guid.NewGuid().ToString();
@@ -76,12 +90,12 @@ namespace Job.Scheduler.Scheduler
         /// <summary>
         /// Schedule a new job to run through a container setup
         /// </summary>
-        /// <param name="jobContainer">The container of the job to run</param>
+        /// <param name="builderJobContainer">The container of the job to run</param>
         /// <param name="token">If you want to cancel easily this specific job later. Default = None</param>
         /// <param name="taskScheduler">In which TaskScheduler should the job be run. Default = TaskScheduler.Default</param>
-        public JobId ScheduleJob<TJob>(IContainerJob<TJob> jobContainer, CancellationToken token = default, TaskScheduler taskScheduler = null) where TJob : IJob
+        public JobId ScheduleJob<TJob>(IJobContainerBuilder<TJob> builderJobContainer, CancellationToken token = default, TaskScheduler taskScheduler = null) where TJob : IJob
         {
-            var runner = ((IJobScheduler)this).ScheduleJobInternal(jobContainer, taskScheduler, token);
+            var runner = ((IJobScheduler)this).ScheduleJobInternal(builderJobContainer, taskScheduler, token);
             return runner == null ? new JobId() : new JobId(runner.UniqueId);
         }
 
@@ -91,7 +105,7 @@ namespace Job.Scheduler.Scheduler
         /// <param name="job">The job to run</param>
         /// <param name="token">If you want to cancel easily this specific job later. Default = None</param>
         /// <param name="taskScheduler">In which TaskScheduler should the job be run. Default = TaskScheduler.Default</param>
-        public JobId ScheduleJob<TJob>(TJob job, CancellationToken token = default, TaskScheduler taskScheduler = null) where TJob : IJob => ScheduleJob(new JobContainer<TJob>(job), token, taskScheduler);
+        public JobId ScheduleJob<TJob>(TJob job, CancellationToken token = default, TaskScheduler taskScheduler = null) where TJob : IJob => ScheduleJob(new BuilderJobContainer<TJob>(job), token, taskScheduler);
 
         /// <summary>
         /// Stop the given job
@@ -112,23 +126,26 @@ namespace Job.Scheduler.Scheduler
         /// </summary>
         public bool HasJob(JobId jobId) => _jobs.TryGetValue(jobId.UniqueId, out _);
 
-        IJobRunner IJobScheduler.ScheduleJobInternal<TJob>(IContainerJob<TJob> jobContainer, TaskScheduler taskScheduler, CancellationToken token)
+        IJobRunner IJobScheduler.ScheduleJobInternal<TJob>(IJobContainerBuilder<TJob> builderJobContainer, TaskScheduler taskScheduler, CancellationToken token)
         {
-            if (jobContainer is IContainerJob<IQueueJob> queueJobContainer)
+            if (builderJobContainer is IJobContainerBuilder<IQueueJob> queueJobContainer)
             {
-                return HandleQueueJobs(queueJobContainer, taskScheduler, queueJobContainer.BuildJob().QueueId, token);
+                using var jobContainer = queueJobContainer.BuildJob();
+                var job = jobContainer.Job;
+                return HandleQueueJobs(queueJobContainer, taskScheduler, job.QueueId, token);
             }
 
 
-            var runner = _jobRunnerBuilder.Build(jobContainer, async jobRunner =>
+            var runner = _jobRunnerBuilder.Build(builderJobContainer, async jobRunner =>
             {
                 _jobs.TryRemove(jobRunner.UniqueId, out _);
-                await jobContainer.OnCompletedAsync(token);
+                await builderJobContainer.OnCompletedAsync(token);
             }, taskScheduler);
             _jobs.TryAdd(runner.UniqueId, runner);
-            if (jobContainer is IContainerJob<IDebounceJob> debounceContainer)
+            if (builderJobContainer is IJobContainerBuilder<IDebounceJob> debounceContainer)
             {
-                var debounceJob = debounceContainer.BuildJob();
+                using var jobContainer = debounceContainer.BuildJob();
+                var debounceJob = jobContainer.Job;
                 if (_debouncedJobs.TryGetValue(debounceJob.Key, out var guid))
                 {
                     //Job could have ended and not be available to be removed anymore
@@ -143,14 +160,14 @@ namespace Job.Scheduler.Scheduler
             return runner;
         }
 
-        private IJobRunner HandleQueueJobs(IContainerJob<IQueueJob> jobContainer, TaskScheduler taskScheduler, string queueId, CancellationToken cancellationToken)
+        private IJobRunner HandleQueueJobs(IJobContainerBuilder<IQueueJob> builderJobContainer, TaskScheduler taskScheduler, string queueId, CancellationToken cancellationToken)
         {
             if (!_queues.TryGetValue(queueId, out var queue))
             {
                 throw new ArgumentException($"Can't schedule job on a non registered queue: {queueId}. Use {nameof(RegisterQueue)} with your {nameof(QueueSettings)}.");
             }
 
-            queue.AddJob(new QueueJobContainer(jobContainer, taskScheduler, cancellationToken));
+            queue.AddJob(new QueueJobContainer(builderJobContainer, taskScheduler, cancellationToken));
             return null;
         }
 

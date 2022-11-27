@@ -16,14 +16,14 @@ public class JobSchedulerStartupConfig
         _jobBuilder = jobBuilder;
     }
 
-    internal readonly List<IContainerJob<IQueueJob>> QueueJobs = new();
-    internal readonly List<IContainerJob<IJob>> OneTimeJobs = new();
+    internal readonly List<IJobContainerBuilder<IQueueJob>> QueueJobs = new();
+    internal readonly List<IJobContainerBuilder<IJob>> OneTimeJobs = new();
 
-    internal readonly List<IContainerJob<IDebounceJob>> DebounceJobs = new();
+    internal readonly List<IJobContainerBuilder<IDebounceJob>> DebounceJobs = new();
 
-    internal readonly List<IContainerJob<IDelayedJob>> DelayedJobs = new();
+    internal readonly List<IJobContainerBuilder<IDelayedJob>> DelayedJobs = new();
 
-    internal readonly List<IContainerJob<IRecurringJob>> RecurringJobs = new();
+    internal readonly List<IJobContainerBuilder<IRecurringJob>> RecurringJobs = new();
 
     private readonly List<QueueSettings> _queueSettings = new();
 
@@ -32,7 +32,7 @@ public class JobSchedulerStartupConfig
     /// </summary>
     /// <param name="jobBuilder"></param>
     /// <returns></returns>
-    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IContainerJob<IQueueJob>> jobBuilder)
+    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IJobContainerBuilder<IQueueJob>> jobBuilder)
     {
         QueueJobs.Add(jobBuilder(_jobBuilder));
         return this;
@@ -43,7 +43,7 @@ public class JobSchedulerStartupConfig
     /// </summary>
     /// <param name="jobBuilder"></param>
     /// <returns></returns>
-    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IContainerJob<IJob>> jobBuilder)
+    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IJobContainerBuilder<IJob>> jobBuilder)
     {
         OneTimeJobs.Add(jobBuilder(_jobBuilder));
         return this;
@@ -54,7 +54,7 @@ public class JobSchedulerStartupConfig
     /// </summary>
     /// <param name="jobBuilder"></param>
     /// <returns></returns>
-    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IContainerJob<IDebounceJob>> jobBuilder)
+    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IJobContainerBuilder<IDebounceJob>> jobBuilder)
     {
         DebounceJobs.Add(jobBuilder(_jobBuilder));
         return this;
@@ -65,7 +65,7 @@ public class JobSchedulerStartupConfig
     /// </summary>
     /// <param name="jobBuilder"></param>
     /// <returns></returns>
-    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IContainerJob<IDelayedJob>> jobBuilder)
+    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IJobContainerBuilder<IDelayedJob>> jobBuilder)
     {
         DelayedJobs.Add(jobBuilder(_jobBuilder));
         return this;
@@ -76,7 +76,7 @@ public class JobSchedulerStartupConfig
     /// </summary>
     /// <param name="jobBuilder"></param>
     /// <returns></returns>
-    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IContainerJob<IRecurringJob>> jobBuilder)
+    public JobSchedulerStartupConfig AddStartupJob(Func<IJobBuilder, IJobContainerBuilder<IRecurringJob>> jobBuilder)
     {
         RecurringJobs.Add(jobBuilder(_jobBuilder));
         return this;

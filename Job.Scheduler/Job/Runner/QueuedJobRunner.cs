@@ -7,13 +7,14 @@ namespace Job.Scheduler.Job.Runner;
 
 internal class QueuedJobRunner : JobRunner<IQueueJob>
 {
-    public QueuedJobRunner(IContainerJob<IQueueJob> jobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(jobContainer, jobDone, taskScheduler)
+    public QueuedJobRunner(IJobContainerBuilder<IQueueJob> builderJobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
     {
     }
 
-    protected override Task StartJobAsync(IContainerJob<IQueueJob> jobContainer, CancellationToken token)
+    protected override Task StartJobAsync(IJobContainerBuilder<IQueueJob> builderJobContainer, CancellationToken token)
     {
-        var job = jobContainer.BuildJob();
+        using var jobContainer = builderJobContainer.BuildJob();
+        var job = jobContainer.Job;
         return InnerExecuteJob(job, token);
     }
 }

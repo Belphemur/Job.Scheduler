@@ -30,7 +30,7 @@ public class Tests
         var builder = serviceProvider.GetRequiredService<IJobBuilder>();
         var container = builder.Create<OneTimeJob>()
                                .Build();
-        container.Should().BeOfType<JobBuilder.ScopedJobContainer<OneTimeJob>>();
+        container.Should().BeOfType<JobBuilder.ScopedBuilderJobContainer<OneTimeJob>>();
 
         var job = container.BuildJob();
 

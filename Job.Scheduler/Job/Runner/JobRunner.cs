@@ -16,7 +16,7 @@ namespace Job.Scheduler.Job.Runner
     /// <typeparam name="TJob"></typeparam>
     internal abstract class JobRunner<TJob> : IJobRunner where TJob : IJob
     {
-        protected readonly IContainerJob<TJob> _jobContainer;
+        protected readonly IJobContainerBuilder<TJob> BuilderJobContainer;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
         private Task _runningTaskWithDone;
@@ -38,9 +38,9 @@ namespace Job.Scheduler.Job.Runner
         public virtual string Key => UniqueId.ToString();
 
 
-        protected JobRunner(IContainerJob<TJob> jobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler)
+        protected JobRunner(IJobContainerBuilder<TJob> builderJobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler)
         {
-            _jobContainer = jobContainer;
+            BuilderJobContainer = builderJobContainer;
             _jobDone = jobDone;
             _taskScheduler = taskScheduler;
         }
@@ -48,7 +48,7 @@ namespace Job.Scheduler.Job.Runner
         /// <summary>
         /// Start the job
         /// </summary>
-        protected abstract Task StartJobAsync(IContainerJob<TJob> jobContainer, CancellationToken token);
+        protected abstract Task StartJobAsync(IJobContainerBuilder<TJob> builderJobContainer, CancellationToken token);
 
         /// <summary>
         /// Run the job
@@ -65,12 +65,12 @@ namespace Job.Scheduler.Job.Runner
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
             _runningTask = _taskScheduler == null
-                ? StartJobAsync(_jobContainer, _cancellationTokenSource.Token)
-                : Task.Factory.StartNew(_ => StartJobAsync(_jobContainer, _cancellationTokenSource.Token), null, _cancellationTokenSource.Token, TaskCreationOptions.None, _taskScheduler).Unwrap();
+                ? StartJobAsync(BuilderJobContainer, _cancellationTokenSource.Token)
+                : Task.Factory.StartNew(_ => StartJobAsync(BuilderJobContainer, _cancellationTokenSource.Token), null, _cancellationTokenSource.Token, TaskCreationOptions.None, _taskScheduler).Unwrap();
 
             _runningTaskWithDone = _runningTask.ContinueWith(async _ =>
             {
-                if (_jobContainer is IAsyncDisposable asyncDisposable)
+                if (BuilderJobContainer is IAsyncDisposable asyncDisposable)
                 {
                     await asyncDisposable.DisposeAsync();
                 }
