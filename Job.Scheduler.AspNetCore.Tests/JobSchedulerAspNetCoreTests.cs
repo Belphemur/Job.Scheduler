@@ -32,7 +32,7 @@ public class Tests
                                .Build();
         container.Should().BeOfType<JobBuilder.ScopedBuilderJobContainer<OneTimeJob>>();
 
-        var job = container.BuildJob();
+        var job = container.BuildJob().Job;
 
         job.Should().BeOfType<OneTimeJob>();
     }
