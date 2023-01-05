@@ -82,13 +82,13 @@ jobs:
             curl -vX PUT -u "$GITHUB_USER:$GITHUB_TOKEN" -F package=@$f $GITHUB_FEED
           done
       - name: Clean up old Main packages
-        uses: actions/delete-package-versions@v3
+        uses: actions/delete-package-versions@v4
         with:
           package-name: "${{env.PROJECT_NAME}}"
           min-versions-to-keep: 10
           ignore-versions: '^\\d{1,8}\\.\\d+\\.\\d+$'
       - name: Clean up old Asp.net Core packages
-        uses: actions/delete-package-versions@v3
+        uses: actions/delete-package-versions@v4
         with:
           package-name: "${{env.PROJECT_NAME}}.AspNetCore"
           min-versions-to-keep: 10
