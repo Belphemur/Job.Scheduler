@@ -18,7 +18,7 @@ namespace Job.Scheduler.Scheduler
     public class JobScheduler : IJobScheduler
     {
         private readonly ConcurrentDictionary<Guid, IJobRunner> _jobs = new();
-        private readonly ConcurrentDictionary<string, Guid> _debouncedJobs = new();
+        private readonly ConcurrentDictionary<string, Debouncer> _debouncedJobs = new();
         private readonly IJobRunnerBuilder _jobRunnerBuilder;
         private readonly ConcurrentDictionary<string, Queue.Queue> _queues = new();
 
@@ -135,6 +135,11 @@ namespace Job.Scheduler.Scheduler
                 return HandleQueueJobs(queueJobContainer, taskScheduler, job.QueueId, token);
             }
 
+            if (builderJobContainer is IJobContainerBuilder<IDebounceJob> debounceContainer)
+            {
+                return HandleDebounceJobs(taskScheduler, debounceContainer, token);
+            }
+            
 
             var runner = _jobRunnerBuilder.Build(builderJobContainer, async jobRunner =>
             {
@@ -142,22 +147,36 @@ namespace Job.Scheduler.Scheduler
                 await builderJobContainer.OnCompletedAsync(token);
             }, taskScheduler);
             _jobs.TryAdd(runner.UniqueId, runner);
-            if (builderJobContainer is IJobContainerBuilder<IDebounceJob> debounceContainer)
-            {
-                using var jobContainer = debounceContainer.BuildJob();
-                var debounceJob = jobContainer.Job;
-                if (_debouncedJobs.TryGetValue(debounceJob.Key, out var guid))
-                {
-                    //Job could have ended and not be available to be removed anymore
-                    _jobs.TryGetValue(guid, out var debounceRunner);
-                    debounceRunner?.StopAsync(default);
-                }
-
-                _debouncedJobs.AddOrUpdate(debounceJob.Key, runner.UniqueId, (_, _) => runner.UniqueId);
-            }
+            
 
             runner.Start(token);
             return runner;
+        }
+
+        private IJobRunner HandleDebounceJobs(TaskScheduler taskScheduler, IJobContainerBuilder<IDebounceJob> debounceContainer, CancellationToken token)
+        {
+            using var jobContainer = debounceContainer.BuildJob();
+            var debounceJob = jobContainer.Job;
+            if (_debouncedJobs.TryGetValue(debounceJob.Key, out var debouncer))
+            {
+                debouncer.Debounce();
+                return debouncer.JobRunner;
+            }
+
+            var debounceRunner = (_jobRunnerBuilder.Build(debounceContainer, async jobRunner =>
+            {
+                _jobs.TryRemove(jobRunner.UniqueId, out _);
+                _debouncedJobs.TryRemove(debounceJob.Key, out var finishedDebouncer);
+                finishedDebouncer?.Dispose();
+                await debounceContainer.OnCompletedAsync(token);
+            }, taskScheduler) as DebounceJobRunner)!;
+            
+            debouncer = new Debouncer(debounceJob, debounceRunner);
+            _jobs.TryAdd(debounceRunner.UniqueId, debounceRunner);
+            _debouncedJobs.TryAdd(debounceJob.Key, debouncer);
+
+            debouncer.Debounce();
+            return debouncer.JobRunner;
         }
 
         private IJobRunner HandleQueueJobs(IJobContainerBuilder<IQueueJob> builderJobContainer, TaskScheduler taskScheduler, string queueId, CancellationToken cancellationToken)
