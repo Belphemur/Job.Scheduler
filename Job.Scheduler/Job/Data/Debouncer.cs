@@ -19,7 +19,13 @@ internal class Debouncer : IDisposable
     }
 
 
-    public void Debounce()
+    public void Debounce(IJobContainerBuilder<IDebounceJob> debounceContainer)
+    {
+        JobRunner.UpdateJob(debounceContainer);
+        _debouncer.Debounce();
+    }
+
+    public void Start()
     {
         _debouncer.Debounce();
     }

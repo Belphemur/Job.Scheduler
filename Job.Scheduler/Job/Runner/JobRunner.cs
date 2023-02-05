@@ -16,7 +16,7 @@ namespace Job.Scheduler.Job.Runner
     /// <typeparam name="TJob"></typeparam>
     internal abstract class JobRunner<TJob> : IJobRunner where TJob : IJob
     {
-        protected readonly IJobContainerBuilder<TJob> BuilderJobContainer;
+        protected IJobContainerBuilder<TJob> BuilderJobContainer;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
         private Task _runningTaskWithDone;

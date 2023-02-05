@@ -131,14 +131,13 @@ namespace Job.Scheduler.Tests
         {
             IJobScheduler scheduler = new JobScheduler(_builder);
             var list = new List<string>();
-            var job = new DebounceJob(list, "Single");
-            var jobRunnerFirst = scheduler.ScheduleJobInternal(new JobScheduler.BuilderJobContainer<IDebounceJob>(job));
+            var jobRunnerFirst = scheduler.ScheduleJobInternal(new JobScheduler.BuilderJobContainer<IDebounceJob>(new DebounceJob(list, "Single", 0)));
             await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(10), CancellationToken.None);
-            var jobRunnerSecond = scheduler.ScheduleJobInternal(new JobScheduler.BuilderJobContainer<IDebounceJob>(job));
+            var jobRunnerSecond = scheduler.ScheduleJobInternal(new JobScheduler.BuilderJobContainer<IDebounceJob>(new DebounceJob(list, "Single", 1)));
             await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(150), CancellationToken.None);
             await jobRunnerFirst.WaitForJob();
             await jobRunnerSecond.WaitForJob();
-            list.Should().ContainSingle(job.Key);
+            list.Should().OnlyContain(s => s == "Single1").And.HaveCount(1);
         }
 
         [Test]
@@ -146,15 +145,14 @@ namespace Job.Scheduler.Tests
         {
             IJobScheduler scheduler = new JobScheduler(_builder);
             var list = new List<string>();
-            var job = new DebounceJob(list, "Multiple");
-            var jobRunnerFirst = scheduler.ScheduleJobInternal(new JobScheduler.BuilderJobContainer<IDebounceJob>(job));
+            var jobRunnerFirst = scheduler.ScheduleJobInternal(new JobScheduler.BuilderJobContainer<IDebounceJob>(new DebounceJob(list, "Multiple", 0)));
             await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(150), CancellationToken.None);
             await jobRunnerFirst.WaitForJob();
-            var jobRunnerSecond = scheduler.ScheduleJobInternal(new JobScheduler.BuilderJobContainer<IDebounceJob>(job));
+            var jobRunnerSecond = scheduler.ScheduleJobInternal(new JobScheduler.BuilderJobContainer<IDebounceJob>(new DebounceJob(list, "Multiple", 1)));
             await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(150), CancellationToken.None);
             await jobRunnerSecond.WaitForJob();
 
-            list.Should().OnlyContain(s => s == job.Key).And.HaveCount(2);
+            list.Should().HaveCount(2).And.ContainInOrder(new[] { "Multiple0", "Multiple1" });
         }
 
         [Test]

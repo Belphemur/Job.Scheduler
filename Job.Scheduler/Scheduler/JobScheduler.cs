@@ -159,7 +159,7 @@ namespace Job.Scheduler.Scheduler
             var debounceJob = jobContainer.Job;
             if (_debouncedJobs.TryGetValue(debounceJob.Key, out var debouncer))
             {
-                debouncer.Debounce();
+                debouncer.Debounce(debounceContainer);
                 return debouncer.JobRunner;
             }
 
@@ -175,7 +175,7 @@ namespace Job.Scheduler.Scheduler
             _jobs.TryAdd(debounceRunner.UniqueId, debounceRunner);
             _debouncedJobs.TryAdd(debounceJob.Key, debouncer);
 
-            debouncer.Debounce();
+            debouncer.Start();
             return debouncer.JobRunner;
         }
 
