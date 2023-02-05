@@ -1,3 +1,10 @@
+## [3.1.2](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.1...v3.1.2) (2023-02-05)
+
+
+### Performance Improvements
+
+* **DebounceJob:** Improve the logic of the debounce job ([fed865b](https://github.com/Belphemur/Job.Scheduler/commit/fed865bd3433120baaad4a8366ce27fe23bb1244))
+
 ## [3.1.1](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.0...v3.1.1) (2022-11-27)
 
 
