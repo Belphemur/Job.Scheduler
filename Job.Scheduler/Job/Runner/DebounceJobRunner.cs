@@ -18,12 +18,6 @@ namespace Job.Scheduler.Job.Runner
         {
             using var jobContainer = builderJobContainer.BuildJob();
             var job = jobContainer.Job;
-            await TaskUtils.WaitForDelayOrCancellation(job.DebounceTime, token);
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
             await InnerExecuteJob(job, token);
         }
     }

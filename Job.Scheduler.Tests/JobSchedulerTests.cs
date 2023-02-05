@@ -138,6 +138,7 @@ namespace Job.Scheduler.Tests
             await jobRunnerFirst.WaitForJob();
             await jobRunnerSecond.WaitForJob();
 
+            await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(150), CancellationToken.None);
             list.Should().ContainSingle(job.Key);
         }
 
@@ -148,8 +149,10 @@ namespace Job.Scheduler.Tests
             var list = new List<string>();
             var job = new DebounceJob(list, "Multiple");
             var jobRunnerFirst = scheduler.ScheduleJobInternal(new JobScheduler.BuilderJobContainer<IDebounceJob>(job));
+            await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(120), CancellationToken.None);
             await jobRunnerFirst.WaitForJob();
             var jobRunnerSecond = scheduler.ScheduleJobInternal(new JobScheduler.BuilderJobContainer<IDebounceJob>(job));
+            await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(120), CancellationToken.None);
             await jobRunnerSecond.WaitForJob();
 
             list.Should().OnlyContain(s => s == job.Key).And.HaveCount(2);
