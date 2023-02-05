@@ -14,16 +14,18 @@ namespace Job.Scheduler.Tests.Mocks
         public TimeSpan? MaxRuntime { get; }
 
         private readonly List<string> _list;
+        private readonly int _id;
 
-        public DebounceJob(List<string> list, string key)
+        public DebounceJob(List<string> list, string key, int id)
         {
             _list = list;
+            _id = id;
             Key = key;
         }
 
         public Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            _list.Add(Key);
+            _list.Add(Key + _id);
             return Task.CompletedTask;
         }
 
