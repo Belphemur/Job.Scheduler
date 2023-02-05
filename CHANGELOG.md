@@ -1,3 +1,10 @@
+## [3.1.3](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.2...v3.1.3) (2023-02-05)
+
+
+### Bug Fixes
+
+* **debounce:** Be sure only the last job is ran in case of debounce. ([ae8e50a](https://github.com/Belphemur/Job.Scheduler/commit/ae8e50af57dea844d6b7ae25b6326a609f2233d1))
+
 ## [3.1.2](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.1...v3.1.2) (2023-02-05)
 
 
