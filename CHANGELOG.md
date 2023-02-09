@@ -1,3 +1,10 @@
+## [3.1.5](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.4...v3.1.5) (2023-02-09)
+
+
+### Bug Fixes
+
+* **Job:** fix possible null case when stopping a job ([cf7efc6](https://github.com/Belphemur/Job.Scheduler/commit/cf7efc6c949fabeb1c4323c29da2915c5fb5cfd0))
+
 ## [3.1.4](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.3...v3.1.4) (2023-02-09)
 
 
