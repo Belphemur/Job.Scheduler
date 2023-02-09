@@ -1,3 +1,10 @@
+## [3.1.6](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.5...v3.1.6) (2023-02-09)
+
+
+### Bug Fixes
+
+* **Debounce:** Be sure to only remove the debouncing key when the DebounceJob has succeeded, not when it was debounced. ([33bb8ff](https://github.com/Belphemur/Job.Scheduler/commit/33bb8ff016610845ea1c27657ee6d595e6d351c4))
+
 ## [3.1.5](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.4...v3.1.5) (2023-02-09)
 
 
