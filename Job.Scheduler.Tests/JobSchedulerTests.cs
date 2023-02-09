@@ -155,6 +155,22 @@ namespace Job.Scheduler.Tests
             list.Should().HaveCount(2).And.ContainInOrder(new[] { "Multiple0", "Multiple1" });
         }
 
+        
+        [Test]
+        public async Task LongRunningDebounceInterruptedJobTest()
+        {
+            IJobScheduler scheduler = new JobScheduler(_builder);
+            var list = new List<string>();
+            var longRunningDebounceJob = new LongRunningDebounceJob(list, "Single", 0);
+            var jobRunnerFirst = scheduler.ScheduleJobInternal(new JobScheduler.BuilderJobContainer<IDebounceJob>(longRunningDebounceJob));
+            await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(130), CancellationToken.None);
+            var jobRunnerSecond = scheduler.ScheduleJobInternal(new JobScheduler.BuilderJobContainer<IDebounceJob>(new DebounceJob(list, "Single", 1)));
+            await TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(150), CancellationToken.None);
+            await jobRunnerFirst.WaitForJob();
+            await jobRunnerSecond.WaitForJob();
+            longRunningDebounceJob.HasBeenInterrupted.Should().BeTrue();
+            list.Should().OnlyContain(s => s == "Single1").And.HaveCount(1);
+        }
         [Test]
         public void DecorrelatedBackOffTest()
         {

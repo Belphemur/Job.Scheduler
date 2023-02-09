@@ -23,7 +23,7 @@ namespace Job.Scheduler.Tests.Mocks
             Key = key;
         }
 
-        public Task ExecuteAsync(CancellationToken cancellationToken)
+        public virtual Task ExecuteAsync(CancellationToken cancellationToken)
         {
             _list.Add(Key + _id);
             return Task.CompletedTask;
