@@ -7,7 +7,7 @@ namespace Job.Scheduler.Job.Runner
 {
     internal class OneTimeJobRunner : JobRunner<IJob>
     {
-        public OneTimeJobRunner(IJobContainerBuilder<IJob> builderJobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
+        public OneTimeJobRunner(IJobContainerBuilder<IJob> builderJobContainer,  Func<IJobRunner, bool, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
         {
         }
 

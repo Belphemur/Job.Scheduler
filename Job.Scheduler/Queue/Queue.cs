@@ -84,7 +84,7 @@ internal class Queue
 
     private void ScheduleJob(QueueJobContainer containerJob)
     {
-        var jobRunner = _jobRunnerBuilder.Build(containerJob.JobContainer, async runner =>
+        var jobRunner = _jobRunnerBuilder.Build(containerJob.JobContainer, async (runner, stoppedManually) =>
         {
             try
             {

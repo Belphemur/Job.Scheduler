@@ -8,7 +8,7 @@ namespace Job.Scheduler.Job.Runner
 {
     internal class DelayedJobRunner : JobRunner<IDelayedJob>
     {
-        public DelayedJobRunner(IJobContainerBuilder<IDelayedJob> builderJobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
+        public DelayedJobRunner(IJobContainerBuilder<IDelayedJob> builderJobContainer,  Func<IJobRunner, bool, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
         {
         }
 

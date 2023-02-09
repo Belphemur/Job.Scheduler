@@ -16,13 +16,13 @@ namespace Job.Scheduler.Job.Runner
     /// <typeparam name="TJob"></typeparam>
     internal abstract class JobRunner<TJob> : IJobRunner where TJob : IJob
     {
-        protected IJobContainerBuilder<TJob> BuilderJobContainer;
+        protected readonly IJobContainerBuilder<TJob> BuilderJobContainer;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _runningTask;
         private Task _runningTaskWithDone;
         private static readonly IRetryAction DefaultFailRule = new NoRetry();
         private readonly Stopwatch _stopwatch = new();
-        private readonly Func<IJobRunner, Task> _jobDone;
+        private readonly Func<IJobRunner,bool, Task> _jobDone;
 
         [CanBeNull]
         private readonly TaskScheduler _taskScheduler;
@@ -37,8 +37,10 @@ namespace Job.Scheduler.Job.Runner
         public Type JobType => typeof(TJob);
         public virtual string Key => UniqueId.ToString();
 
+        private bool _manuallyStopped = false;
 
-        protected JobRunner(IJobContainerBuilder<TJob> builderJobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler)
+
+        protected JobRunner(IJobContainerBuilder<TJob> builderJobContainer, Func<IJobRunner, bool, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler)
         {
             BuilderJobContainer = builderJobContainer;
             _jobDone = jobDone;
@@ -57,6 +59,7 @@ namespace Job.Scheduler.Job.Runner
         /// <returns></returns>
         public void Start(CancellationToken token = default)
         {
+            _manuallyStopped = false;
             if (IsRunning)
             {
                 throw new InvalidOperationException("Can't start a running job");
@@ -75,7 +78,7 @@ namespace Job.Scheduler.Job.Runner
                     await asyncDisposable.DisposeAsync();
                 }
 
-                await _jobDone(this);
+                await _jobDone(this, _manuallyStopped);
                 _runningTask.Dispose();
                 _cancellationTokenSource.Dispose();
             }, CancellationToken.None).Unwrap();
@@ -94,8 +97,12 @@ namespace Job.Scheduler.Job.Runner
                 return TimeSpan.Zero;
             }
 
+            _manuallyStopped = true;
             _cancellationTokenSource.Cancel();
             await Task.WhenAny(TaskUtils.WaitForDelayOrCancellation(TimeSpan.FromMilliseconds(-1), token), _runningTaskWithDone);
+            _runningTaskWithDone.Dispose();
+            _runningTaskWithDone = null;
+            _cancellationTokenSource.Dispose();
             _stopwatch.Stop();
             return _stopwatch.Elapsed;
         }
