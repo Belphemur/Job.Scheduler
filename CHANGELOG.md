@@ -1,3 +1,10 @@
+## [3.1.4](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.3...v3.1.4) (2023-02-09)
+
+
+### Bug Fixes
+
+* **debounce:** Be sure to interrupt old running job when debouncing ([a45735c](https://github.com/Belphemur/Job.Scheduler/commit/a45735cde9c51cb38e89351daa0daf68587cc333))
+
 ## [3.1.3](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.2...v3.1.3) (2023-02-05)
 
 
