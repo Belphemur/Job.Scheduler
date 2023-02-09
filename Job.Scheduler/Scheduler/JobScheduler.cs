@@ -155,24 +155,31 @@ namespace Job.Scheduler.Scheduler
 
         private IJobRunner HandleDebounceJobs(TaskScheduler taskScheduler, IJobContainerBuilder<IDebounceJob> debounceContainer, CancellationToken token)
         {
+            DebounceJobRunner BuildDebounceRunner(HasKey job)
+            {
+                var debounceJobRunner = (_jobRunnerBuilder.Build(debounceContainer, async jobRunner =>
+                {
+                    _jobs.TryRemove(jobRunner.UniqueId, out _);
+                    _debouncedJobs.TryRemove(job.Key, out var finishedDebouncer);
+                    finishedDebouncer?.Dispose();
+                    await debounceContainer.OnCompletedAsync(token);
+                }, taskScheduler) as DebounceJobRunner)!;
+
+                _jobs.TryAdd(debounceJobRunner.UniqueId, debounceJobRunner);
+                return debounceJobRunner;
+            }
+
             using var jobContainer = debounceContainer.BuildJob();
             var debounceJob = jobContainer.Job;
             if (_debouncedJobs.TryGetValue(debounceJob.Key, out var debouncer))
             {
-                debouncer.Debounce(debounceContainer);
+                debouncer.Debounce(BuildDebounceRunner(debounceJob));
                 return debouncer.JobRunner;
             }
 
-            var debounceRunner = (_jobRunnerBuilder.Build(debounceContainer, async jobRunner =>
-            {
-                _jobs.TryRemove(jobRunner.UniqueId, out _);
-                _debouncedJobs.TryRemove(debounceJob.Key, out var finishedDebouncer);
-                finishedDebouncer?.Dispose();
-                await debounceContainer.OnCompletedAsync(token);
-            }, taskScheduler) as DebounceJobRunner)!;
-            
+            var debounceRunner = BuildDebounceRunner(debounceJob);
+
             debouncer = new Debouncer(debounceJob, debounceRunner);
-            _jobs.TryAdd(debounceRunner.UniqueId, debounceRunner);
             _debouncedJobs.TryAdd(debounceJob.Key, debouncer);
 
             debouncer.Start();

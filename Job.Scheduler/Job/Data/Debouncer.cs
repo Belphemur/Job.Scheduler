@@ -6,7 +6,7 @@ namespace Job.Scheduler.Job.Data;
 
 internal class Debouncer : IDisposable
 {
-    public DebounceJobRunner JobRunner { get; }
+    public DebounceJobRunner JobRunner { get; private set; }
     private readonly DebounceDispatcher<object> _debouncer;
     
     public Debouncer(IDebounceJob job, DebounceJobRunner jobRunner)
@@ -19,10 +19,12 @@ internal class Debouncer : IDisposable
     }
 
 
-    public void Debounce(IJobContainerBuilder<IDebounceJob> debounceContainer)
+    public void Debounce(DebounceJobRunner jobRunner)
     {
-        JobRunner.UpdateJob(debounceContainer);
+        var stoppingTask = JobRunner.StopAsync(default);
         _debouncer.Debounce();
+        JobRunner = jobRunner;
+        stoppingTask.GetAwaiter().GetResult();
     }
 
     public void Start()
