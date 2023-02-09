@@ -30,7 +30,7 @@ namespace Job.Scheduler.Job.Runner
         private static readonly ActivitySource _activitySource = new("Job.Scheduler::Runner");
 
         public Guid UniqueId { get; } = Guid.NewGuid();
-        public bool IsRunning => _cancellationTokenSource is { IsCancellationRequested: false };
+        public bool IsRunning => _cancellationTokenSource is { IsCancellationRequested: false } && _runningTaskWithDone is not null;
         public TimeSpan Elapsed => _stopwatch.Elapsed;
         public int Retries { get; private set; }
 
