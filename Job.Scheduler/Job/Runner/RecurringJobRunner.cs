@@ -8,7 +8,7 @@ namespace Job.Scheduler.Job.Runner
 {
     internal class RecurringJobRunner : JobRunner<IRecurringJob>
     {
-        public RecurringJobRunner(IJobContainerBuilder<IRecurringJob> builderJobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
+        public RecurringJobRunner(IJobContainerBuilder<IRecurringJob> builderJobContainer,  Func<IJobRunner, bool, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
         {
         }
 

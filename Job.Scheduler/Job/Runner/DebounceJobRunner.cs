@@ -8,7 +8,7 @@ namespace Job.Scheduler.Job.Runner
 {
     internal class DebounceJobRunner : JobRunner<IDebounceJob>
     {
-        public DebounceJobRunner(IJobContainerBuilder<IDebounceJob> builderJobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
+        public DebounceJobRunner(IJobContainerBuilder<IDebounceJob> builderJobContainer, Func<IJobRunner, bool, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
         {
         }
 

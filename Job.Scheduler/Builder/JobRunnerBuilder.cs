@@ -28,7 +28,7 @@ namespace Job.Scheduler.Builder
         /// <summary>
         /// Build a Job runner for the given job
         /// </summary>
-        public IJobRunner Build<TJob>(IJobContainerBuilder<TJob> builder, Func<IJobRunner, Task> jobDone, TaskScheduler taskScheduler) where TJob : IJob
+        public IJobRunner Build<TJob>(IJobContainerBuilder<TJob> builder, Func<IJobRunner, bool, Task> jobDone, TaskScheduler taskScheduler) where TJob : IJob
         {
             var mainTypeJob = builder.JobType;
 

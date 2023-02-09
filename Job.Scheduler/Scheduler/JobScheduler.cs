@@ -37,8 +37,9 @@ namespace Job.Scheduler.Scheduler
 
                 public TJob Job { get; }
             }
+
             private readonly TJob _job;
-            
+
 
             public Type JobType => typeof(TJob);
             public string Key { get; }
@@ -139,15 +140,15 @@ namespace Job.Scheduler.Scheduler
             {
                 return HandleDebounceJobs(taskScheduler, debounceContainer, token);
             }
-            
 
-            var runner = _jobRunnerBuilder.Build(builderJobContainer, async jobRunner =>
+
+            var runner = _jobRunnerBuilder.Build(builderJobContainer, async (jobRunner, stoppedManually) =>
             {
                 _jobs.TryRemove(jobRunner.UniqueId, out _);
                 await builderJobContainer.OnCompletedAsync(token);
             }, taskScheduler);
             _jobs.TryAdd(runner.UniqueId, runner);
-            
+
 
             runner.Start(token);
             return runner;
@@ -157,11 +158,15 @@ namespace Job.Scheduler.Scheduler
         {
             DebounceJobRunner BuildDebounceRunner(HasKey job)
             {
-                var debounceJobRunner = (_jobRunnerBuilder.Build(debounceContainer, async jobRunner =>
+                var debounceJobRunner = (_jobRunnerBuilder.Build(debounceContainer, async (jobRunner, stoppedManually) =>
                 {
                     _jobs.TryRemove(jobRunner.UniqueId, out _);
-                    _debouncedJobs.TryRemove(job.Key, out var finishedDebouncer);
-                    finishedDebouncer?.Dispose();
+                    if (!stoppedManually)
+                    {
+                        _debouncedJobs.TryRemove(job.Key, out var finishedDebouncer);
+                        finishedDebouncer?.Dispose();
+                    }
+
                     await debounceContainer.OnCompletedAsync(token);
                 }, taskScheduler) as DebounceJobRunner)!;
 
@@ -201,9 +206,14 @@ namespace Job.Scheduler.Scheduler
         /// Stop the task and wait for it to terminate.
         /// Use the token to stop the task earlier
         /// </summary>
-        public Task StopAsync(CancellationToken token = default)
+        public async Task StopAsync(CancellationToken token = default)
         {
-            return Task.WhenAll(_jobs.Values.Select(runner => runner.StopAsync(token)).Concat(_queues.Values.Select(queue => queue.StopAsync(token))));
+            await Task.WhenAll(_jobs.Values.Select(runner => runner.StopAsync(token)).Concat(_queues.Values.Select(queue => queue.StopAsync(token))));
+            foreach (var (key, debouncer) in _debouncedJobs)
+            {
+                debouncer?.Dispose();
+            }
+            _debouncedJobs.Clear();
         }
     }
 }

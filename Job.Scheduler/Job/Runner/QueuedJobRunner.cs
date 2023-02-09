@@ -7,7 +7,7 @@ namespace Job.Scheduler.Job.Runner;
 
 internal class QueuedJobRunner : JobRunner<IQueueJob>
 {
-    public QueuedJobRunner(IJobContainerBuilder<IQueueJob> builderJobContainer, Func<IJobRunner, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
+    public QueuedJobRunner(IJobContainerBuilder<IQueueJob> builderJobContainer,  Func<IJobRunner, bool, Task> jobDone, [CanBeNull] TaskScheduler taskScheduler) : base(builderJobContainer, jobDone, taskScheduler)
     {
     }
 
