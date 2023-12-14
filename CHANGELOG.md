@@ -1,3 +1,10 @@
+## [3.1.8](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.7...v3.1.8) (2023-12-14)
+
+
+### Performance Improvements
+
+* **Readme:** Add readme to package ([af50942](https://github.com/Belphemur/Job.Scheduler/commit/af50942c35290f1281f5204015fe4acf98ff67fe))
+
 ## [3.1.7](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.6...v3.1.7) (2023-12-14)
 
 
