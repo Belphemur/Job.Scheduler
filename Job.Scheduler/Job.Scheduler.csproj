@@ -13,6 +13,7 @@
         <PackageProjectUrl>https://github.com/Belphemur/Job.Scheduler</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Belphemur/Job.Scheduler</RepositoryUrl>
         <EmbedAllSources>true</EmbedAllSources>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -28,6 +29,9 @@
         <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
         <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
         <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
