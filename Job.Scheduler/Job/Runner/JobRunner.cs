@@ -68,7 +68,7 @@ namespace Job.Scheduler.Job.Runner
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
             _runningTask = _taskScheduler == null
-                ? StartJobAsync(BuilderJobContainer, _cancellationTokenSource.Token)
+                ? Task.Factory.StartNew( _ => StartJobAsync(BuilderJobContainer, _cancellationTokenSource.Token), null, _cancellationTokenSource.Token).Unwrap()
                 : Task.Factory.StartNew(_ => StartJobAsync(BuilderJobContainer, _cancellationTokenSource.Token), null, _cancellationTokenSource.Token, TaskCreationOptions.None, _taskScheduler).Unwrap();
 
             _runningTaskWithDone = _runningTask.ContinueWith(async _ =>
