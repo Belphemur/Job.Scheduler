@@ -32,7 +32,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 7.0.x
+          dotnet-version: 8.0.x
       - uses: actions/cache@v3
         with:
           path: ~/.nuget/packages
@@ -85,13 +85,15 @@ jobs:
         uses: actions/delete-package-versions@v4
         with:
           package-name: "${{env.PROJECT_NAME}}"
-          min-versions-to-keep: 10
+          min-versions-to-keep: 5
+          package-type: 'nuget'
           ignore-versions: '^\\d{1,8}\\.\\d+\\.\\d+$'
       - name: Clean up old Asp.net Core packages
         uses: actions/delete-package-versions@v4
         with:
           package-name: "${{env.PROJECT_NAME}}.AspNetCore"
-          min-versions-to-keep: 10
+          min-versions-to-keep: 5
+          package-type: 'nuget'
           ignore-versions: '^\\d{1,8}\\.\\d+\\.\\d+$'
   deploy:
     needs: build
@@ -102,7 +104,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 7.0.x
+          dotnet-version: 8.0.x
       - name: Cache .NET deps
         uses: actions/cache@v3
         with:
