@@ -1,3 +1,10 @@
+## [3.1.7](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.6...v3.1.7) (2023-12-14)
+
+
+### Bug Fixes
+
+* **JobRunner:** Be sure that all jobs are run into tasks ([7bb4ac8](https://github.com/Belphemur/Job.Scheduler/commit/7bb4ac8e773f52a168a01051a02bfaf5435d5d91))
+
 ## [3.1.6](https://github.com/Belphemur/Job.Scheduler/compare/v3.1.5...v3.1.6) (2023-02-09)
 
 
