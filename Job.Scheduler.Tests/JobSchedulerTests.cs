@@ -115,7 +115,7 @@ namespace Job.Scheduler.Tests
         }
 
         [Test]
-        public async Task ExecuteInDefaultScheduler()
+        public async Task ExecuteInTask()
         {
             IJobScheduler scheduler = new JobScheduler(_builder);
             var job = new ThreadJob(Thread.CurrentThread);
@@ -123,7 +123,7 @@ namespace Job.Scheduler.Tests
             await jobRunner.WaitForJob();
             job.HasRun.Should().BeTrue();
             jobRunner.Retries.Should().Be(0);
-            job.InitThread.Should().Be(job.RunThread);
+            job.TaskId.Should().NotBeNull();
         }
 
         [Test]
