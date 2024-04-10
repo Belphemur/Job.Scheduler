@@ -28,7 +28,7 @@
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
         <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
         <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
-        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
+        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
     </ItemGroup>
     <ItemGroup>
         <None Include="..\README.md" Pack="true" PackagePath="\"/>
